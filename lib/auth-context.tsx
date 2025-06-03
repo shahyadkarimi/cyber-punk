@@ -11,7 +11,7 @@ interface AuthContextType {
   userProfile: any | null
   loading: boolean
   signIn: (email: string, password: string) => Promise<{ error: any }>
-  signUp: (email: string, password: string, username?: string, role?: UserRole) => Promise<{ error: any; user?: User }>
+  signUp: (email: string, password: string, username?: string, role?: UserRole) => Promise<{ error: any; user?: User | null }>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<{ error: any }>
   refreshProfile: () => Promise<void>
