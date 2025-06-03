@@ -1,19 +1,51 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Trash2, Edit, Search, Users, UserCheck, UserX, Shield } from "lucide-react"
-import { UsersService, type User, type UserStats } from "@/lib/database-services/users-service"
-import UserForm from "./user-form"
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Trash2,
+  Edit,
+  Search,
+  Users,
+  UserCheck,
+  UserX,
+  Shield,
+  CircleCheck,
+  CircleX,
+} from "lucide-react";
+import {
+  UsersService,
+  type User,
+  type UserStats,
+} from "@/lib/database-services/users-service";
+import UserForm from "./user-form";
 
 export default function UsersManagement() {
-  const [users, setUsers] = useState<User[]>([])
+  const [users, setUsers] = useState<User[]>([]);
   const [stats, setStats] = useState<UserStats>({
     total: 0,
     admins: 0,
@@ -21,137 +53,158 @@ export default function UsersManagement() {
     clients: 0,
     active: 0,
     inactive: 0,
-  })
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [roleFilter, setRoleFilter] = useState<string>("all")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [selectedUser, setSelectedUser] = useState<User | null>(null)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  });
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   useEffect(() => {
-    loadUsers()
-    loadStats()
-  }, [])
+    loadUsers();
+    loadStats();
+  }, []);
 
   const loadUsers = async () => {
     try {
-      setLoading(true)
-      const data = await UsersService.getAllUsers()
-      setUsers(data)
+      setLoading(true);
+      const data = await UsersService.getAllUsers();
+      setUsers(data);
     } catch (error) {
-      console.error("Error loading users:", error)
+      console.error("Error loading users:", error);
       // Show error message to user
-      alert(`Error loading users: ${error instanceof Error ? error.message : "Unknown error"}`)
+      alert(
+        `Error loading users: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`
+      );
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const loadStats = async () => {
     try {
-      const data = await UsersService.getUserStats()
-      setStats(data)
+      const data = await UsersService.getUserStats();
+      setStats(data);
     } catch (error) {
-      console.error("Error loading stats:", error)
+      console.error("Error loading stats:", error);
     }
-  }
+  };
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) {
-      loadUsers()
-      return
+      loadUsers();
+      return;
     }
 
     try {
-      setLoading(true)
-      const data = await UsersService.searchUsers(searchQuery)
-      setUsers(data)
+      setLoading(true);
+      const data = await UsersService.searchUsers(searchQuery);
+      setUsers(data);
     } catch (error) {
-      console.error("Error searching users:", error)
+      console.error("Error searching users:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleDeleteUser = async (userId: string) => {
-    if (!confirm("Are you sure you want to delete this user?")) return
+    if (!confirm("Are you sure you want to delete this user?")) return;
 
     try {
-      await UsersService.deleteUser(userId)
-      await loadUsers()
-      await loadStats()
+      await UsersService.deleteUser(userId);
+      await loadUsers();
+      await loadStats();
     } catch (error) {
-      console.error("Error deleting user:", error)
-      alert("Error deleting user")
+      console.error("Error deleting user:", error);
+      alert("Error deleting user");
     }
-  }
+  };
 
   const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
     try {
-      await UsersService.toggleUserStatus(userId, !currentStatus)
-      await loadUsers()
-      await loadStats()
+      await UsersService.toggleUserStatus(userId, !currentStatus);
+      await loadUsers();
+      await loadStats();
     } catch (error) {
-      console.error("Error toggling user status:", error)
-      alert("Error updating user status")
+      console.error("Error toggling user status:", error);
+      alert("Error updating user status");
     }
-  }
+  };
+
+    const handleToggleAdminApprov = async (userId: string, currentStatus: boolean) => {
+    try {
+      await UsersService.toggleUserAdminApprov(userId, !currentStatus);
+      await loadUsers();
+      await loadStats();
+    } catch (error) {
+      console.error("Error toggling user status:", error);
+      alert("Error updating user status");
+    }
+  };
 
   const handleEditUser = (user: User) => {
-    setSelectedUser(user)
-    setIsEditDialogOpen(true)
-  }
+    setSelectedUser(user);
+    setIsEditDialogOpen(true);
+  };
 
   const handleUserUpdated = () => {
-    setIsEditDialogOpen(false)
-    setSelectedUser(null)
-    loadUsers()
-    loadStats()
-  }
+    setIsEditDialogOpen(false);
+    setSelectedUser(null);
+    loadUsers();
+    loadStats();
+  };
 
   const filteredUsers = users.filter((user) => {
-    const matchesRole = roleFilter === "all" || user.role === roleFilter
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
     const matchesStatus =
       statusFilter === "all" ||
       (statusFilter === "active" && user.is_active) ||
-      (statusFilter === "inactive" && !user.is_active)
+      (statusFilter === "inactive" && !user.is_active);
 
-    return matchesRole && matchesStatus
-  })
+    return matchesRole && matchesStatus;
+  });
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
       case "admin":
-        return "bg-red-500/20 text-red-400 border-red-500/30"
+        return "bg-red-500/20 text-red-400 border-red-500/30";
       case "seller":
-        return "bg-blue-500/20 text-blue-400 border-blue-500/30"
+        return "bg-blue-500/20 text-blue-400 border-blue-500/30";
       case "client":
-        return "bg-green-500/20 text-green-400 border-green-500/30"
+        return "bg-green-500/20 text-green-400 border-green-500/30";
       default:
-        return "bg-gray-500/20 text-gray-400 border-gray-500/30"
+        return "bg-gray-500/20 text-gray-400 border-gray-500/30";
     }
-  }
+  };
 
   const getStatusBadgeColor = (isActive: boolean) => {
     return isActive
       ? "bg-green-500/20 text-green-400 border-green-500/30"
-      : "bg-red-500/20 text-red-400 border-red-500/30"
-  }
+      : "bg-red-500/20 text-red-400 border-red-500/30";
+  };
 
   return (
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-[#00ff9d] mb-2">Users Management</h1>
-        <p className="text-gray-400">Manage user accounts, roles, and permissions</p>
+        <h1 className="text-3xl font-bold text-[#00ff9d] mb-2">
+          Users Management
+        </h1>
+        <p className="text-gray-400">
+          Manage user accounts, roles, and permissions
+        </p>
       </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="bg-[#1a1a1a] border-[#2a2a3a]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Total Users</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">
+              Total Users
+            </CardTitle>
             <Users className="h-4 w-4 text-[#00ff9d]" />
           </CardHeader>
           <CardContent>
@@ -161,7 +214,9 @@ export default function UsersManagement() {
 
         <Card className="bg-[#1a1a1a] border-[#2a2a3a]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Admins</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">
+              Admins
+            </CardTitle>
             <Shield className="h-4 w-4 text-red-400" />
           </CardHeader>
           <CardContent>
@@ -171,7 +226,9 @@ export default function UsersManagement() {
 
         <Card className="bg-[#1a1a1a] border-[#2a2a3a]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Active Users</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">
+              Active Users
+            </CardTitle>
             <UserCheck className="h-4 w-4 text-green-400" />
           </CardHeader>
           <CardContent>
@@ -181,11 +238,15 @@ export default function UsersManagement() {
 
         <Card className="bg-[#1a1a1a] border-[#2a2a3a]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Inactive Users</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">
+              Inactive Users
+            </CardTitle>
             <UserX className="h-4 w-4 text-red-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.inactive}</div>
+            <div className="text-2xl font-bold text-white">
+              {stats.inactive}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -193,7 +254,9 @@ export default function UsersManagement() {
       {/* Search and Filters */}
       <Card className="bg-[#1a1a1a] border-[#2a2a3a]">
         <CardHeader>
-          <CardTitle className="text-[#00ff9d]">Search & Filter Users</CardTitle>
+          <CardTitle className="text-[#00ff9d]">
+            Search & Filter Users
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
@@ -230,7 +293,10 @@ export default function UsersManagement() {
                 <SelectItem value="inactive">Inactive</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={handleSearch} className="bg-[#00ff9d] text-black hover:bg-[#00cc7d]">
+            <Button
+              onClick={handleSearch}
+              className="bg-[#00ff9d] text-black hover:bg-[#00cc7d]"
+            >
               Search
             </Button>
           </div>
@@ -240,14 +306,18 @@ export default function UsersManagement() {
       {/* Debug Info - Remove in production */}
       <Card className="bg-[#1a1a1a] border-[#2a2a3a] mb-4">
         <CardContent className="p-4">
-          <p className="text-sm text-gray-400">Debug: Total users loaded: {users.length}</p>
+          <p className="text-sm text-gray-400">
+            Debug: Total users loaded: {users.length}
+          </p>
         </CardContent>
       </Card>
 
       {/* Users Table */}
       <Card className="bg-[#1a1a1a] border-[#2a2a3a]">
         <CardHeader>
-          <CardTitle className="text-[#00ff9d]">Users ({filteredUsers.length})</CardTitle>
+          <CardTitle className="text-[#00ff9d]">
+            Users ({filteredUsers.length})
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -263,6 +333,9 @@ export default function UsersManagement() {
                     <TableHead className="text-gray-400">Email</TableHead>
                     <TableHead className="text-gray-400">Role</TableHead>
                     <TableHead className="text-gray-400">Status</TableHead>
+                    <TableHead className="text-gray-400">
+                      Admin approv
+                    </TableHead>
                     <TableHead className="text-gray-400">Joined</TableHead>
                     <TableHead className="text-gray-400">Actions</TableHead>
                   </TableRow>
@@ -281,26 +354,45 @@ export default function UsersManagement() {
                               />
                             ) : (
                               <span className="text-[#00ff9d] font-semibold">
-                                {(user.full_name || user.username || user.email)?.[0]?.toUpperCase()}
+                                {(user.full_name ||
+                                  user.username ||
+                                  user.email)?.[0]?.toUpperCase()}
                               </span>
                             )}
                           </div>
                           <div>
-                            <div className="font-medium text-white">{user.full_name || user.username || "No name"}</div>
-                            <div className="text-sm text-gray-400">@{user.username || "no-username"}</div>
+                            <div className="font-medium text-white">
+                              {user.full_name || user.username || "No name"}
+                            </div>
+                            <div className="text-sm text-gray-400">
+                              @{user.username || "no-username"}
+                            </div>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-300">{user.email}</TableCell>
+                      <TableCell className="text-gray-300">
+                        {user.email}
+                      </TableCell>
                       <TableCell>
-                        <Badge className={getRoleBadgeColor(user.role)}>{user.role}</Badge>
+                        <Badge className={getRoleBadgeColor(user.role)}>
+                          {user.role}
+                        </Badge>
                       </TableCell>
                       <TableCell>
                         <Badge className={getStatusBadgeColor(user.is_active)}>
                           {user.is_active ? "Active" : "Inactive"}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-gray-300">{new Date(user.created_at).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className={getStatusBadgeColor(user.admin_approved)}
+                        >
+                          {user.admin_approved ? "approved" : "unapproved"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-gray-300">
+                        {new Date(user.created_at).toLocaleDateString()}
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
                           <Button
@@ -314,10 +406,30 @@ export default function UsersManagement() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleToggleStatus(user.id, user.is_active)}
+                            onClick={() =>
+                              handleToggleStatus(user.id, user.is_active)
+                            }
                             className="border-[#3a3a4a] text-yellow-400 hover:bg-yellow-400 hover:text-black"
                           >
-                            {user.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                            {user.is_active ? (
+                              <UserX className="h-4 w-4" />
+                            ) : (
+                              <UserCheck className="h-4 w-4" />
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() =>
+                              handleToggleAdminApprov(user.id, user.admin_approved)
+                            }
+                            className="border-[#3a3a4a] text-blue-400 hover:bg-blue-400 hover:text-black"
+                          >
+                            {user.admin_approved ? (
+                              <CircleX className="h-4 w-4" />
+                            ) : (
+                              <CircleCheck className="h-4 w-4" />
+                            )}
                           </Button>
                           <Button
                             size="sm"
@@ -354,10 +466,14 @@ export default function UsersManagement() {
             <DialogTitle className="text-[#00ff9d]">Edit User</DialogTitle>
           </DialogHeader>
           {selectedUser && (
-            <UserForm user={selectedUser} onSuccess={handleUserUpdated} onCancel={() => setIsEditDialogOpen(false)} />
+            <UserForm
+              user={selectedUser}
+              onSuccess={handleUserUpdated}
+              onCancel={() => setIsEditDialogOpen(false)}
+            />
           )}
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

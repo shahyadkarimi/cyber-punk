@@ -8,6 +8,7 @@ export interface User {
   avatar_url?: string | null
   role: "admin" | "seller" | "client"
   is_active: boolean
+  admin_approved: boolean
   last_login_at?: string | null
   created_at: string
   updated_at: string
@@ -62,6 +63,7 @@ export class UsersService {
           avatar_url,
           role,
           is_active,
+          admin_approved,
           last_login_at,
           created_at,
           updated_at
@@ -93,6 +95,7 @@ export class UsersService {
           avatar_url,
           role,
           is_active,
+          admin_approved,
           last_login_at,
           created_at,
           updated_at
@@ -138,6 +141,7 @@ export class UsersService {
           avatar_url,
           role,
           is_active,
+          admin_approved,
           last_login_at,
           created_at,
           updated_at
@@ -229,6 +233,7 @@ export class UsersService {
           avatar_url,
           role,
           is_active,
+          admin_approved,
           last_login_at,
           created_at,
           updated_at
@@ -254,5 +259,9 @@ export class UsersService {
 
   static async toggleUserStatus(id: string, is_active: boolean): Promise<User> {
     return this.updateUser(id, { is_active })
+  }
+
+    static async toggleUserAdminApprov(id: string, admin_approved: boolean): Promise<User> {
+    return this.updateUser(id, { admin_approved })
   }
 }
