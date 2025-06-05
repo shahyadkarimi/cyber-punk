@@ -122,7 +122,7 @@ export default function UserMenu() {
           <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#00ff9d] rounded-full border-2 border-[#1a1a1a]"></div>
         </div>
 
-        <div className="hidden md:flex flex-col items-start">
+        <div className="hidden xl:flex flex-col items-start">
           <span className="text-sm font-semibold text-white">{username}</span>
           <span className="text-xs text-gray-400 capitalize">{role}</span>
         </div>

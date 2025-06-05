@@ -26,14 +26,14 @@ export default function Header() {
   }, [pathname])
 
   const navItems = [
-    { name: "Home", path: "/", icon: <Home className="h-4 w-4 mr-2" /> },
-    { name: "Shells", path: "/shells", icon: <Terminal className="h-4 w-4 mr-2" /> },
-    { name: "Exploits", path: "/exploits", icon: <AlertTriangle className="h-4 w-4 mr-2" /> },
-    { name: "Domains", path: "/domains", icon: <ShoppingBag className="h-4 w-4 mr-2" /> },
-    { name: "Domain Finder", path: "/domain-finder", icon: <Globe className="h-4 w-4 mr-2" /> },
-    { name: "Vuln Scanner", path: "/vuln-scanner", icon: <Shield className="h-4 w-4 mr-2" /> },
-    { name: "Tools", path: "/tools", icon: <Wrench className="h-4 w-4 mr-2" /> },
-    { name: "About", path: "/about", icon: <Info className="h-4 w-4 mr-2" /> },
+    { name: "Home", path: "/", icon: <Home className="h-4 w-4" /> },
+    { name: "Shells", path: "/shells", icon: <Terminal className="h-4 w-4" /> },
+    { name: "Exploits", path: "/exploits", icon: <AlertTriangle className="h-4 w-4" /> },
+    { name: "Domains", path: "/domains", icon: <ShoppingBag className="h-4 w-4" /> },
+    { name: "Domain Finder", path: "/domain-finder", icon: <Globe className="h-4 w-4" /> },
+    { name: "Vuln Scanner", path: "/vuln-scanner", icon: <Shield className="h-4 w-4" /> },
+    { name: "Tools", path: "/tools", icon: <Wrench className="h-4 w-4" /> },
+    { name: "About", path: "/about", icon: <Info className="h-4 w-4" /> },
   ]
 
   const handleMobileMenuClick = () => {
@@ -42,11 +42,11 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 w-full transition-all duration-300 ${
-        isScrolled ? "bg-[#0d0d0f]/90 backdrop-blur-md border-b border-[#2a2a3a]" : "bg-transparent"
+      className={`sticky top-0 z-50 w-full transition-all duration-300 border-b ${
+        isScrolled ? "bg-[#0d0d0f]/90 backdrop-blur-md border-[#2a2a3a]" : "bg-transparent border-transparent"
       }`}
     >
-      <div className="container mx-auto px-4">
+      <div className="max-w-[1536px] mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link
             href="/"
@@ -56,12 +56,12 @@ export default function Header() {
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex space-x-6">
+          <nav className="hidden md:flex gap-4 2xl:gap-6">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 href={item.path}
-                className={`font-mono text-sm hover:text-[#00ff9d] transition-colors relative group flex items-center ${
+                className={`font-mono text-sm hover:text-[#00ff9d] transition-colors relative group flex items-center 2xl:gap-2 gap-1 ${
                   pathname === item.path || pathname?.startsWith(item.path + "/") ? "text-[#00ff9d]" : "text-gray-300"
                 }`}
               >
@@ -77,8 +77,9 @@ export default function Header() {
           </nav>
 
           {/* Desktop User Menu and GitHub */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center gap-3">
             <UserMenu />
+            
             <Link
               href="https://github.com/sagsooz/Bypass-Webshell"
               target="_blank"
