@@ -1,4 +1,4 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import connectDB from "@/lib/connectDB";
 import User from "@/models/UsersModel";
 import { registerSchema } from "@/lib/validation";
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     // Check if user already exists
     const existingUser = await User.findOne({ email: validatedData.email });
     if (existingUser) {
-      return Response.json(
+      return NextResponse.json(
         { error: "User with this email already exists" },
         { status: 400 }
       );
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
         username: validatedData.username,
       });
       if (existingUsername) {
-        return Response.json(
+        return NextResponse.json(
           { error: "This username is already taken" },
           { status: 400 }
         );
@@ -78,13 +78,13 @@ export async function POST(request: NextRequest) {
     console.error("Register error:", error);
 
     if (error.name === "ZodError") {
-      return Response.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
     }
 
     // Error handling
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern)[0];
-      return Response.json(
+      return NextResponse.json(
         {
           error: `This ${
             field === "email" ? "email" : "username"
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return Response.json(
+    return NextResponse.json(
       { error: "Registration failed. Please try again" },
       { status: 500 }
     );

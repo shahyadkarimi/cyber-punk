@@ -1,4 +1,4 @@
-import type { NextRequest } from "next/server"
+import { NextResponse, type NextRequest } from "next/server"
 import { verifyToken } from "./jwt"
 
 export async function getAuthUser(request: NextRequest) {
@@ -17,7 +17,7 @@ export async function getAuthUser(request: NextRequest) {
 }
 
 export function createAuthResponse(data: any, token?: string) {
-  const response = Response.json(data)
+  const response = NextResponse.json(data)
 
   if (token) {
     response.cookies.set("auth-token", token, {
@@ -33,7 +33,7 @@ export function createAuthResponse(data: any, token?: string) {
 }
 
 export function clearAuthResponse(data: any) {
-  const response = Response.json(data)
+  const response = NextResponse.json(data)
   response.cookies.delete("auth-token")
   return response
 }
