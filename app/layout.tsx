@@ -4,7 +4,8 @@ import { JetBrains_Mono } from "next/font/google"
 import "./globals.css"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
-import { AuthProvider } from "@/lib/auth-context"
+import { AuthProvider } from "@/hooks/use-auth"
+// import { AuthProvider } from "@/lib/auth-context"
 
 // Configure the JetBrains Mono font with the weights we need
 const jetbrainsMono = JetBrains_Mono({
