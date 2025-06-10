@@ -38,7 +38,7 @@ export default function SignupForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const { signUp } = useAuth();
+  const { register } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,26 +65,22 @@ export default function SignupForm() {
       return;
     }
 
-    postData("/auth/signup", {
+    const registerResult = await register({
       email,
       password,
       username: username.trim(),
+      full_name: username.trim(),
       role,
-    })
-      .then((res) => {
-        setSuccess(true);
+    });
 
-        // Redirect immediately to dashboard after 1 second
-        // setTimeout(() => {
-        //   router.push("/dashboard")
-        //   router.refresh()
-        // }, 1000)
-      })
-      .catch((err) => {
-        console.error("Signup error:", err);
-        setError(err.response.data.error);
-        setIsLoading(false);
-      });
+    if (registerResult.success) {
+      router.push("/dashboard");
+      setSuccess(true);
+    } else {
+      setError(registerResult.error || "Register failed");
+    }
+
+    setIsLoading(false);
   };
 
   if (success) {
