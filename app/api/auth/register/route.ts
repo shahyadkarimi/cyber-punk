@@ -4,6 +4,7 @@ import User from "@/models/UsersModel";
 import { registerSchema } from "@/lib/validation";
 import { createAuthResponse } from "@/lib/auth";
 import { signToken } from "@/lib/jwt";
+import bcrypt from "bcryptjs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,10 +37,13 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Hash password before saving
+    const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+
     // Create new user
     const user = new User({
       email: validatedData.email,
-      password: validatedData.password,
+      password: hashedPassword,
       full_name: validatedData.full_name,
       username: validatedData.username,
     });
@@ -78,7 +82,10 @@ export async function POST(request: NextRequest) {
     console.error("Register error:", error);
 
     if (error.name === "ZodError") {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json(
+        { error: error.errors[0].message },
+        { status: 400 }
+      );
     }
 
     // Error handling

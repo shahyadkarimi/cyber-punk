@@ -26,7 +26,7 @@ export default function ProtectedRoute({
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user?._id) {
+    if (!loading && !user?.email) {
       router.push("/auth/login");
     }
   }, [user, loading, router]);
@@ -42,7 +42,7 @@ export default function ProtectedRoute({
     );
   }
 
-  if (!user?._id) {
+  if (!user?.email) {
     return null;
   }
   
