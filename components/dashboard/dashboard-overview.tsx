@@ -6,13 +6,13 @@ import SellerDashboard from "./seller-dashboard"
 import ClientDashboard from "./client-dashboard"
 
 export default function DashboardOverview() {
-  const { userProfile, loading } = useAuth()
+  const { user, loading } = useAuth()
 
-  if (loading || !userProfile) {
+  if (loading || !user) {
     return null
   }
 
-  const role = userProfile.role
+  const role = user.role
 
   switch (role) {
     case "admin":

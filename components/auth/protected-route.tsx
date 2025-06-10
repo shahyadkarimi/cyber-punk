@@ -22,11 +22,11 @@ export default function ProtectedRoute({
   allowedRoles,
   fallback,
 }: ProtectedRouteProps) {
-  const { user, userProfile, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user?._id) {
       router.push("/auth/login");
     }
   }, [user, loading, router]);
@@ -42,13 +42,12 @@ export default function ProtectedRoute({
     );
   }
 
-  if (!user) {
+  if (!user?._id) {
     return null;
   }
-
-  const userRole = userProfile?.role;
-  console.log(userProfile);
-
+  
+  const userRole = user?.role;
+  
   // Check role permissions
   if (requiredRole && userRole !== requiredRole) {
     return (
@@ -65,7 +64,7 @@ export default function ProtectedRoute({
     );
   }
 
-  if (userRole === "seller" && !userProfile?.admin_approved) {
+  if (userRole === "seller" && !user?.admin_approved) {
     return (
       fallback || (
         <DashboardLayout>

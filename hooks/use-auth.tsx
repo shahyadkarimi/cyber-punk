@@ -9,7 +9,7 @@ import {
 } from "react";
 
 interface User {
-  id: string;
+  _id: string;
   email: string;
   username?: string;
   full_name?: string;

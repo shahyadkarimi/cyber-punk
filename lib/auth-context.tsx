@@ -8,7 +8,7 @@ import type { UserRole } from "./database.types";
 
 interface AuthContextType {
   user: User | null;
-  userProfile: any | null;
+  user: any | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signUp: (
@@ -19,7 +19,7 @@ interface AuthContextType {
   ) => Promise<{ error: any; user?: User | null }>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<{ error: any }>;
-  refreshProfile: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   isAdmin: boolean;
 }
 
@@ -27,7 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [userProfile, setUserProfile] = useState<any | null>(null);
+  const [user, setuser] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setUser(session?.user ?? null);
         if (session?.user) {
-          await fetchUserProfile(session.user.id);
+          await fetchuser(session.user.id);
         }
         setLoading(false);
       } catch (error) {
@@ -75,9 +75,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        await fetchUserProfile(session.user.id);
+        await fetchuser(session.user.id);
       } else {
-        setUserProfile(null);
+        setuser(null);
         setIsAdmin(false);
       }
       setLoading(false);
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const fetchUserProfile = async (userId: string, retryCount = 0) => {
+  const fetchuser = async (userId: string, retryCount = 0) => {
     const maxRetries = 3;
 
     try {
@@ -142,7 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 console.log("Created new user profile, retrying fetch...");
                 // Retry fetching after creation
                 setTimeout(
-                  () => fetchUserProfile(userId, retryCount + 1),
+                  () => fetchuser(userId, retryCount + 1),
                   1000
                 );
                 return;
@@ -163,7 +163,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         ) {
           console.log(`Retrying fetch in ${(retryCount + 1) * 1000}ms...`);
           setTimeout(
-            () => fetchUserProfile(userId, retryCount + 1),
+            () => fetchuser(userId, retryCount + 1),
             (retryCount + 1) * 1000
           );
           return;
@@ -180,12 +180,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             is_active: true,
             admin_approved: false,
           };
-          setUserProfile(fallbackProfile);
+          setuser(fallbackProfile);
           setIsAdmin(false);
         }
       } else {
         console.log("User profile fetched successfully:", data);
-        setUserProfile(data);
+        setuser(data);
         setIsAdmin(data?.role === "admin");
       }
     } catch (error) {
@@ -197,7 +197,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           `Network error, retrying in ${(retryCount + 1) * 2000}ms...`
         );
         setTimeout(
-          () => fetchUserProfile(userId, retryCount + 1),
+          () => fetchuser(userId, retryCount + 1),
           (retryCount + 1) * 2000
         );
         return;
@@ -215,7 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             is_active: true,
             admin_approved: false,
           };
-          setUserProfile(fallbackProfile);
+          setuser(fallbackProfile);
           setIsAdmin(false);
           console.log("Using fallback profile due to network issues");
         }
@@ -225,9 +225,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const refreshProfile = async () => {
+  const refreshUser = async () => {
     if (user) {
-      await fetchUserProfile(user.id);
+      await fetchuser(user.id);
     }
   };
 
@@ -277,13 +277,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
-      setUserProfile(null);
+      setuser(null);
       setIsAdmin(false);
     } catch (error) {
       console.error("Sign out error:", error);
       // Force clear state even if signOut fails
       setUser(null);
-      setUserProfile(null);
+      setuser(null);
       setIsAdmin(false);
     }
   };
@@ -302,13 +302,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const value = {
     user,
-    userProfile,
+    user,
     loading,
     signIn,
     signUp,
     signOut,
     resetPassword,
-    refreshProfile,
+    refreshUser,
     isAdmin,
   };
 

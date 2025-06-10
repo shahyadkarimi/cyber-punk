@@ -26,13 +26,13 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user, userProfile, signOut } = useAuth()
+  const { user,  logout } = useAuth()
   const pathname = usePathname()
   const router = useRouter()
-  const role = userProfile?.role || "client"
+  const role = user?.role || "client"
 
   const handleSignOut = async () => {
-    await signOut()
+    await logout()
     router.push("/")
   }
 
@@ -79,7 +79,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <h2 className="text-xl font-bold text-[#00ff9d]">
             {role === "admin" ? "Admin Panel" : role === "seller" ? "Seller Dashboard" : "Client Dashboard"}
           </h2>
-          <p className="text-sm text-gray-400 mt-1">Welcome, {userProfile?.username || user?.email?.split("@")[0]}</p>
+          <p className="text-sm text-gray-400 mt-1">Welcome, {user?.username || user?.email?.split("@")[0]}</p>
         </div>
 
         {/* Navigation */}

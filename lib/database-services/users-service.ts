@@ -31,9 +31,9 @@ export class UsersService {
       if (!currentUser.user) return false
 
       // Check database
-      const { data: userProfile } = await supabase.from("users").select("role").eq("id", currentUser.user.id).single()
+      const { data: user } = await supabase.from("users").select("role").eq("id", currentUser.user.id).single()
 
-      return userProfile?.role === "admin"
+      return user?.role === "admin"
     } catch (error) {
       console.error("Error checking admin status:", error)
       return false

@@ -12,36 +12,36 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "@/hooks/use-toast"
 import { User, Shield, Mail, DollarSign, CalendarDays, Clock, Save, Loader2 } from "lucide-react"
-import type { UserProfile } from "@/lib/database.types"
+import type { user } from "@/lib/database.types"
 
 export default function ProfileClientPage() {
-  const { user, userProfile, refreshProfile } = useAuth()
+  const { user, refreshUser } = useAuth()
   const [username, setUsername] = useState("")
   const [fullName, setFullName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
   useEffect(() => {
-    if (userProfile) {
-      setUsername(userProfile.username || "")
-      setFullName(userProfile.full_name || "")
+    if (user) {
+      setUsername(user.username || "")
+      setFullName(user.full_name || "")
     }
-  }, [userProfile])
+  }, [user])
 
   const handleProfileUpdate = async (e: FormEvent) => {
     e.preventDefault()
-    if (!user || !userProfile) {
+    if (!user || !user) {
       toast({ title: "Error", description: "User not authenticated.", variant: "destructive" })
       return
     }
     setIsLoading(true)
     try {
-      const updates: Partial<UserProfile> = {
+      const updates: Partial<user> = {
         id: user.id,
         username,
         full_name: fullName,
       }
       await UsersService.updateUser(user.id, updates)
-      await refreshProfile()
+      await refreshUser()
       toast({ title: "Success", description: "Profile updated successfully." })
     } catch (error) {
       console.error("Profile update error:", error)
@@ -55,7 +55,7 @@ export default function ProfileClientPage() {
     }
   }
 
-  if (!userProfile && !user) {
+  if (!user && !user) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-12 w-12 animate-spin text-[#00ff9d]" />
@@ -90,7 +90,7 @@ export default function ProfileClientPage() {
               </CardTitle>
               <CardDescription className="text-gray-400 text-lg flex items-center justify-center sm:justify-start">
                 <Shield size={18} className="mr-2 text-[#00b8ff]" />
-                Role: {userProfile?.role || "N/A"}
+                Role: {user?.role || "N/A"}
               </CardDescription>
             </div>
           </div>
@@ -143,19 +143,19 @@ export default function ProfileClientPage() {
               <InfoPill
                 Icon={DollarSign}
                 label="Balance"
-                value={`$${userProfile?.balance?.toFixed(2) || "0.00"}`}
+                value={`$${user?.balance?.toFixed(2) || "0.00"}`}
                 color="text-green-400"
               />
               <InfoPill
                 Icon={CalendarDays}
                 label="Joined"
-                value={userProfile?.created_at ? new Date(userProfile.created_at).toLocaleDateString() : "N/A"}
+                value={user?.created_at ? new Date(user.created_at).toLocaleDateString() : "N/A"}
                 color="text-sky-400"
               />
               <InfoPill
                 Icon={Clock}
                 label="Last Login"
-                value={userProfile?.last_login_at ? new Date(userProfile.last_login_at).toLocaleString() : "N/A"}
+                value={user?.last_login_at ? new Date(user.last_login_at).toLocaleString() : "N/A"}
                 color="text-purple-400"
               />
             </div>

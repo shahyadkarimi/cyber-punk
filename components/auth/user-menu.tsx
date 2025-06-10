@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 
 export default function UserMenu() {
-  const { user, userProfile, signOut } = useAuth()
+  const { user, logout } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -17,7 +17,7 @@ export default function UserMenu() {
   const handleSignOut = async () => {
     setIsLoading(true)
     try {
-      await signOut()
+      await logout()
       setIsOpen(false)
       router.push("/")
       router.refresh()
@@ -56,9 +56,9 @@ export default function UserMenu() {
   }
 
   const userInitials = user.email?.charAt(0).toUpperCase() || "U"
-  const username = userProfile?.username || user.email?.split("@")[0] || "User"
-  const role = userProfile?.role || "client"
-  const balance = userProfile?.balance || 0
+  const username = user?.username || user.email?.split("@")[0] || "User"
+  const role = user?.role || "client"
+  const balance = user?.balance || 0
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -116,7 +116,7 @@ export default function UserMenu() {
       >
         <div className="relative">
           <Avatar className="h-9 w-9 ring-2 ring-[#00ff9d] shadow-lg">
-            <AvatarImage src={userProfile?.avatar_url || "/placeholder.svg"} alt={username} />
+            <AvatarImage src={user?.avatar_url || "/placeholder.svg"} alt={username} />
             <AvatarFallback className={`${getRoleColor(role)} text-white font-semibold`}>{userInitials}</AvatarFallback>
           </Avatar>
           <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-[#00ff9d] rounded-full border-2 border-[#1a1a1a]"></div>
@@ -143,7 +143,7 @@ export default function UserMenu() {
               <div className="absolute inset-0 bg-black/20"></div>
               <div className="relative flex items-center space-x-4">
                 <Avatar className="h-12 w-12 ring-2 ring-white/20">
-                  <AvatarImage src={userProfile?.avatar_url || "/placeholder.svg"} alt={username} />
+                  <AvatarImage src={user?.avatar_url || "/placeholder.svg"} alt={username} />
                   <AvatarFallback className="bg-white/20 text-white font-semibold">{userInitials}</AvatarFallback>
                 </Avatar>
                 <div>

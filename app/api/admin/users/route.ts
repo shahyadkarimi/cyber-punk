@@ -30,13 +30,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Check if user is admin
-    const { data: userProfile } = await supabaseAdmin
+    const { data: user } = await supabaseAdmin
       .from("users")
       .select("role")
       .eq("id", user.id)
       .single();
 
-    if (userProfile?.role !== "admin") {
+    if (user?.role !== "admin") {
       return NextResponse.json(
         { error: "Admin access required" },
         { status: 403 }

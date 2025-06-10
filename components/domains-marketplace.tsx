@@ -28,8 +28,8 @@ import { supabase } from "@/lib/supabase"
 import type { DomainWithSeller } from "@/lib/database-services/domains-service"
 
 export function DomainsMarketplace() {
-  const { userProfile } = useAuth()
-  const isSeller = userProfile?.role === "seller" || userProfile?.role === "admin"
+  const { user } = useAuth()
+  const isSeller = user?.role === "seller" || user?.role === "admin"
 
   const [domains, setDomains] = useState<DomainWithSeller[]>([])
   const [loading, setLoading] = useState(true)
@@ -156,7 +156,7 @@ export function DomainsMarketplace() {
 
       if (isSeller) {
         // For sellers, filter domains to only show their own sales
-        const sellerDomains = allDomains.filter((d) => d.seller?.id === userProfile?.id)
+        const sellerDomains = allDomains.filter((d) => d.seller?.id === user?.id)
         averagePrice =
           sellerDomains.length > 0
             ? sellerDomains.reduce((sum, d) => sum + (d.price || 0), 0) / sellerDomains.length
@@ -167,7 +167,7 @@ export function DomainsMarketplace() {
           .from("domains")
           .select("price")
           .eq("status", "sold")
-          .eq("seller_id", userProfile?.id)
+          .eq("seller_id", user?.id)
 
         totalRevenue = soldDomains?.reduce((sum, d) => sum + (d.price || 0), 0) || 0
       }
@@ -193,7 +193,7 @@ export function DomainsMarketplace() {
 
   useEffect(() => {
     fetchStats()
-  }, [isSeller, userProfile?.id])
+  }, [isSeller, user?.id])
 
   const totalPages = Math.ceil(totalCount / pageSize)
 
