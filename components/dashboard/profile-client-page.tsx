@@ -3,7 +3,7 @@
 import Link from "next/link"
 import type React from "react"
 import { useState, useEffect, type FormEvent } from "react"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import { UsersService } from "@/lib/database-services/users-service"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"

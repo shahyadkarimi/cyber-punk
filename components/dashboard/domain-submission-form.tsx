@@ -11,7 +11,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { X, Plus } from "lucide-react"
 import { supabase } from "@/lib/supabase"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
 
 export default function DomainSubmissionForm() {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "./auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import { useEffect, useState } from "react"
 import { supabase } from "./supabase"
 import type { UserRole } from "./database.types"

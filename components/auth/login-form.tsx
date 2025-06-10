@@ -1,51 +1,50 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useAuth } from "@/lib/auth-context"
-import Link from "next/link"
-import { Eye, EyeOff, Loader2, CheckCircle } from "lucide-react"
+import type React from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/hooks/use-auth";
+import Link from "next/link";
+import { Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState("")
-  const [success, setSuccess] = useState(false)
-  const { signIn } = useAuth()
-  const router = useRouter()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
+  const { login } = useAuth();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError("")
-    setSuccess(false)
+    e.preventDefault();
+    setIsLoading(true);
+    setError("");
+    setSuccess(false);
 
-    try {
-      const { error } = await signIn(email, password)
-      if (error) {
-        setError(error.message)
-      } else {
-        setSuccess(true)
-        // Redirect immediately to dashboard after 1 second
-        setTimeout(() => {
-          router.push("/dashboard")
-          router.refresh()
-        }, 1000)
-      }
-    } catch (err) {
-      setError("An unexpected error occurred")
-    } finally {
-      setIsLoading(false)
+    const loginResult = await login(email, password);
+
+    if (loginResult.success) {
+      router.push("/dashboard");
+      setSuccess(true);
+    } else {
+      setError(loginResult.error || "Login failed");
     }
-  }
+
+    setIsLoading(false);
+  };
 
   if (success) {
     return (
@@ -53,8 +52,12 @@ export default function LoginForm() {
         <Card className="w-full max-w-md bg-[#1a1a1a] border-[#2a2a3a]">
           <CardHeader className="text-center">
             <CheckCircle className="mx-auto h-12 w-12 text-[#00ff9d] mb-4" />
-            <CardTitle className="text-2xl font-mono text-[#00ff9d]">Login Successful</CardTitle>
-            <CardDescription className="text-gray-400">Redirecting to dashboard...</CardDescription>
+            <CardTitle className="text-2xl font-mono text-[#00ff9d]">
+              Login Successful
+            </CardTitle>
+            <CardDescription className="text-gray-400">
+              Redirecting to dashboard...
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex justify-center">
@@ -63,21 +66,27 @@ export default function LoginForm() {
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0d0d0f] p-4">
       <Card className="w-full max-w-md bg-[#1a1a1a] border-[#2a2a3a]">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-mono text-[#00ff9d]">Access Terminal</CardTitle>
-          <CardDescription className="text-gray-400">Enter your credentials to access TRXSecurity</CardDescription>
+          <CardTitle className="text-2xl font-mono text-[#00ff9d]">
+            Access Terminal
+          </CardTitle>
+          <CardDescription className="text-gray-400">
+            Enter your credentials to access TRXSecurity
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <Alert className="border-red-500/50 bg-red-500/10">
-                <AlertDescription className="text-red-400">{error}</AlertDescription>
+                <AlertDescription className="text-red-400">
+                  {error}
+                </AlertDescription>
               </Alert>
             )}
 
@@ -139,12 +148,18 @@ export default function LoginForm() {
           </form>
 
           <div className="mt-6 text-center space-y-2">
-            <Link href="/auth/forgot-password" className="text-sm text-[#00ff9d] hover:underline">
+            <Link
+              href="/auth/forgot-password"
+              className="text-sm text-[#00ff9d] hover:underline"
+            >
               Forgot your password?
             </Link>
             <div className="text-sm text-gray-400">
               Need access?{" "}
-              <Link href="/auth/signup" className="text-[#00ff9d] hover:underline">
+              <Link
+                href="/auth/signup"
+                className="text-[#00ff9d] hover:underline"
+              >
                 Request credentials
               </Link>
             </div>
@@ -152,5 +167,5 @@ export default function LoginForm() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

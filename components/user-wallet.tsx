@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Wallet, Plus, RefreshCw, CreditCard, CheckCircle, AlertCircle, TestTube } from "lucide-react"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import { UsersService } from "@/lib/database-services/users-service"
 import { OxapayService } from "@/lib/payment-services/oxapay-service"
 

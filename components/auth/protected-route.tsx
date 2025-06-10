@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/hooks/use-auth";
 import type { UserRole } from "@/lib/database.types";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";

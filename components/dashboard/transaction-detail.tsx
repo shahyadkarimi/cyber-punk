@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import { useRole } from "@/lib/use-role"
 import { TransactionsService, type Transaction } from "@/lib/database-services/transactions-service"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"

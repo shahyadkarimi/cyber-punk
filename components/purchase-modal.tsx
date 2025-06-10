@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Label } from "@/components/ui/label"
 import { Globe, CreditCard, Shield, CheckCircle, Wallet, AlertCircle } from "lucide-react"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import { UsersService } from "@/lib/database-services/users-service"
 import { OxapayService } from "@/lib/payment-services/oxapay-service"
 import { domainsService } from "@/lib/database-services/domains-service" // Fixed import

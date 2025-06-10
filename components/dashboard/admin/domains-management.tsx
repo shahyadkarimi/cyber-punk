@@ -25,7 +25,7 @@ import {
   Clock,
 } from "lucide-react"
 import type { Domain } from "@/lib/types"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 
 const statusColors: Record<string, string> = {
   pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",

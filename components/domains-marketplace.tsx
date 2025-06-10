@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge"
 import { DomainCard } from "@/components/domain-card"
 import { DomainFilters } from "@/components/domain-filters"
 import { domainsService } from "@/lib/database-services/domains-service"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import { supabase } from "@/lib/supabase"
 import type { DomainWithSeller } from "@/lib/database-services/domains-service"
 

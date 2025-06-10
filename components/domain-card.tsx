@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Globe, TrendingUp, Eye, ShoppingCart, Star } from "lucide-react"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import { PurchaseModal } from "@/components/purchase-modal"
 import type { DomainWithSeller } from "@/lib/database-services/domains-service"
 

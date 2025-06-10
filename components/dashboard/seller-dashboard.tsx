@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Globe, DollarSign, Clock, CheckCircle, Plus } from "lucide-react"
 import { supabase } from "@/lib/supabase"
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import Link from "next/link"
 
 interface SellerStats {

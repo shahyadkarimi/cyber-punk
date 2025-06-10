@@ -21,7 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth } from "@/hooks/use-auth";
 import Link from "next/link";
 import { Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
 import type { UserRole } from "@/lib/database.types";

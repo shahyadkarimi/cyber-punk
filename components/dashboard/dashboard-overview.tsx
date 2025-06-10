@@ -1,6 +1,6 @@
 "use client"
 
-import { useAuth } from "@/lib/auth-context"
+import { useAuth } from "@/hooks/use-auth"
 import AdminDashboard from "./admin-dashboard"
 import SellerDashboard from "./seller-dashboard"
 import ClientDashboard from "./client-dashboard"
