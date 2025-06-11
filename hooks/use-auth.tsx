@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 
-interface User {
+export interface User {
   _id: string;
   email: string;
   username?: string;

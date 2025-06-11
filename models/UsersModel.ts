@@ -12,6 +12,7 @@ export interface Users extends Document {
   last_login_at?: Date;
   created_at: Date;
   updated_at: Date;
+  deleted_at?: Date;
   email_confirmed_at?: Date;
   balance?: number;
   admin_approved: boolean;
@@ -35,6 +36,7 @@ const UserSchema: Schema = new Schema<Users>({
   last_login_at: { type: Date, default: null },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
+  deleted_at: { type: Date, default: null },
   email_confirmed_at: { type: Date, default: null },
   balance: { type: Number, default: 0 },
   admin_approved: { type: Boolean, default: false },

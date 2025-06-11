@@ -39,10 +39,13 @@ import {
 } from "lucide-react";
 import {
   UsersService,
-  type User,
+  // type User,
   type UserStats,
 } from "@/lib/database-services/users-service";
 import UserForm from "./user-form";
+import { getData, postData } from "@/services/API";
+import { toast } from "@/hooks/use-toast";
+import { User } from "@/hooks/use-auth";
 
 export default function UsersManagement() {
   const [users, setUsers] = useState<User[]>([]);
@@ -67,21 +70,22 @@ export default function UsersManagement() {
   }, []);
 
   const loadUsers = async () => {
-    try {
-      setLoading(true);
-      const data = await UsersService.getAllUsers();
-      setUsers(data);
-    } catch (error) {
-      console.error("Error loading users:", error);
-      // Show error message to user
-      alert(
-        `Error loading users: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-    } finally {
-      setLoading(false);
-    }
+    setLoading(true);
+
+    getData("/admin/users/get-all")
+      .then((res) => {
+        setUsers(res.data.users);
+
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        toast({
+          title: err?.response?.data?.error,
+          description: err.message,
+          variant: "destructive",
+        });
+      });
   };
 
   const loadStats = async () => {
@@ -99,50 +103,65 @@ export default function UsersManagement() {
       return;
     }
 
-    try {
-      setLoading(true);
-      const data = await UsersService.searchUsers(searchQuery);
-      setUsers(data);
-    } catch (error) {
-      console.error("Error searching users:", error);
-    } finally {
-      setLoading(false);
-    }
+    // try {
+    //   setLoading(true);
+    //   const data = await UsersService.searchUsers(searchQuery);
+    //   setUsers(data);
+    // } catch (error) {
+    //   console.error("Error searching users:", error);
+    // } finally {
+    //   setLoading(false);
+    // }
   };
 
   const handleDeleteUser = async (userId: string) => {
     if (!confirm("Are you sure you want to delete this user?")) return;
 
-    try {
-      await UsersService.deleteUser(userId);
-      await loadUsers();
-      await loadStats();
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      alert("Error deleting user");
-    }
+    postData("/admin/users/delete", { userId })
+      .then((res) => {
+        loadUsers();
+        loadStats();
+      })
+      .catch((err) => {
+        setLoading(false);
+        toast({
+          title: err?.response?.data?.error,
+          description: err.message,
+          variant: "destructive",
+        });
+      });
   };
 
-  const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
-    try {
-      await UsersService.toggleUserStatus(userId, !currentStatus);
-      await loadUsers();
-      await loadStats();
-    } catch (error) {
-      console.error("Error toggling user status:", error);
-      alert("Error updating user status");
-    }
+  const handleToggleStatus = (userId: string) => {
+    postData("/admin/users/change-status", { userId })
+      .then((res) => {
+        loadUsers();
+        loadStats();
+      })
+      .catch((err) => {
+        setLoading(false);
+        toast({
+          title: err?.response?.data?.error,
+          description: err.message,
+          variant: "destructive",
+        });
+      });
   };
 
-    const handleToggleAdminApprov = async (userId: string, currentStatus: boolean) => {
-    try {
-      await UsersService.toggleUserAdminApprov(userId, !currentStatus);
-      await loadUsers();
-      await loadStats();
-    } catch (error) {
-      console.error("Error toggling user status:", error);
-      alert("Error updating user status");
-    }
+  const handleToggleAdminApprov = (userId: string) => {
+    postData("/admin/users/approv-status", { userId })
+      .then((res) => {
+        loadUsers();
+        loadStats();
+      })
+      .catch((err) => {
+        setLoading(false);
+        toast({
+          title: err?.response?.data?.error,
+          description: err.message,
+          variant: "destructive",
+        });
+      });
   };
 
   const handleEditUser = (user: User) => {
@@ -342,7 +361,7 @@ export default function UsersManagement() {
                 </TableHeader>
                 <TableBody>
                   {filteredUsers.map((user) => (
-                    <TableRow key={user.id} className="border-[#2a2a3a]">
+                    <TableRow key={user._id} className="border-[#2a2a3a]">
                       <TableCell>
                         <div className="flex items-center space-x-3">
                           <div className="w-8 h-8 bg-[#2a2a3a] rounded-full flex items-center justify-center">
@@ -380,7 +399,7 @@ export default function UsersManagement() {
                       </TableCell>
                       <TableCell>
                         <Badge className={getStatusBadgeColor(user.is_active)}>
-                          {user.is_active ? "Active" : "Inactive"}
+                          {user.is_active ? "active" : "inactive"}
                         </Badge>
                       </TableCell>
                       <TableCell>
@@ -406,9 +425,7 @@ export default function UsersManagement() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() =>
-                              handleToggleStatus(user.id, user.is_active)
-                            }
+                            onClick={() => handleToggleStatus(user._id)}
                             className="border-[#3a3a4a] text-yellow-400 hover:bg-yellow-400 hover:text-black"
                           >
                             {user.is_active ? (
@@ -420,9 +437,7 @@ export default function UsersManagement() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() =>
-                              handleToggleAdminApprov(user.id, user.admin_approved)
-                            }
+                            onClick={() => handleToggleAdminApprov(user._id)}
                             className="border-[#3a3a4a] text-blue-400 hover:bg-blue-400 hover:text-black"
                           >
                             {user.admin_approved ? (
@@ -434,7 +449,7 @@ export default function UsersManagement() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleDeleteUser(user.id)}
+                            onClick={() => handleDeleteUser(user._id)}
                             className="border-[#3a3a4a] text-red-400 hover:bg-red-400 hover:text-black"
                           >
                             <Trash2 className="h-4 w-4" />

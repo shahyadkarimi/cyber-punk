@@ -1,19 +1,26 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Switch } from "@/components/ui/switch"
-import { UsersService, type User } from "@/lib/database-services/users-service"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { postData } from "@/services/API";
+import { User } from "@/hooks/use-auth";
 
 interface UserFormProps {
-  user: User
-  onSuccess: () => void
-  onCancel: () => void
+  user: User;
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
 export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
@@ -24,29 +31,32 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
     avatar_url: user.avatar_url || "",
     role: user.role,
     is_active: user.is_active,
-  })
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    try {
-      await UsersService.updateUser(user.id, formData)
-      onSuccess()
-    } catch (error) {
-      console.error("Error updating user:", error)
-      setError("Failed to update user")
-    } finally {
-      setLoading(false)
-    }
-  }
+    postData("/admin/users/edit", { userId: user._id, ...formData })
+      .then((res) => {
+        onSuccess();
+      })
+      .catch((err) => {
+        setError(err?.response?.data?.error || "Failed to update user");
+        setLoading(false);
+      });
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      {error && <div className="bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-2 rounded">{error}</div>}
+      {error && (
+        <div className="bg-red-500/20 border border-red-500/30 text-red-400 px-4 py-2 rounded">
+          {error}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <div>
@@ -56,7 +66,9 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           <Input
             id="username"
             value={formData.username}
-            onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, username: e.target.value })
+            }
             className="bg-[#2a2a3a] border-[#3a3a4a] text-white"
             placeholder="Enter username"
           />
@@ -69,7 +81,9 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           <Input
             id="full_name"
             value={formData.full_name}
-            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+            onChange={(e) =>
+              setFormData({ ...formData, full_name: e.target.value })
+            }
             className="bg-[#2a2a3a] border-[#3a3a4a] text-white"
             placeholder="Enter full name"
           />
@@ -98,7 +112,9 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         <Input
           id="avatar_url"
           value={formData.avatar_url}
-          onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
+          onChange={(e) =>
+            setFormData({ ...formData, avatar_url: e.target.value })
+          }
           className="bg-[#2a2a3a] border-[#3a3a4a] text-white"
           placeholder="Enter avatar URL"
         />
@@ -110,7 +126,9 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         </Label>
         <Select
           value={formData.role}
-          onValueChange={(value: "admin" | "seller" | "client") => setFormData({ ...formData, role: value })}
+          onValueChange={(value: "admin" | "seller" | "client") =>
+            setFormData({ ...formData, role: value })
+          }
         >
           <SelectTrigger className="bg-[#2a2a3a] border-[#3a3a4a] text-white">
             <SelectValue placeholder="Select role" />
@@ -127,7 +145,9 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         <Switch
           id="is_active"
           checked={formData.is_active}
-          onCheckedChange={(checked) => setFormData({ ...formData, is_active: checked })}
+          onCheckedChange={(checked) =>
+            setFormData({ ...formData, is_active: checked })
+          }
         />
         <Label htmlFor="is_active" className="text-gray-300">
           Active User
@@ -143,10 +163,14 @@ export default function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={loading} className="bg-[#00ff9d] text-black hover:bg-[#00cc7d]">
+        <Button
+          type="submit"
+          disabled={loading}
+          className="bg-[#00ff9d] text-black hover:bg-[#00cc7d]"
+        >
           {loading ? "Updating..." : "Update User"}
         </Button>
       </div>
     </form>
-  )
+  );
 }
