@@ -103,15 +103,20 @@ export default function UsersManagement() {
       return;
     }
 
-    // try {
-    //   setLoading(true);
-    //   const data = await UsersService.searchUsers(searchQuery);
-    //   setUsers(data);
-    // } catch (error) {
-    //   console.error("Error searching users:", error);
-    // } finally {
-    //   setLoading(false);
-    // }
+    getData(`/admin/users/get-all?search=${searchQuery}`)
+      .then((res) => {
+        setUsers(res.data.users);
+
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        toast({
+          title: err?.response?.data?.error,
+          description: err.message,
+          variant: "destructive",
+        });
+      });
   };
 
   const handleDeleteUser = async (userId: string) => {

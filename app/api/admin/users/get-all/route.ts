@@ -16,10 +16,22 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const users = await User.find({
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get("search");
+
+    const query: any = {
       role: { $in: ["client", "seller"] },
       deleted_at: null,
-    }).select("-password -reset_token -reset_token_expires");
+    };
+
+    if (search) {
+      const regex = new RegExp(search, "i"); // case-insensitive search
+      query.$or = [{ full_name: regex }, { username: regex }, { email: regex }];
+    }
+
+    const users = await User.find(query).select(
+      "-password -reset_token -reset_token_expires"
+    );
 
     return NextResponse.json({ users }, { status: 200 });
   } catch (error: any) {
