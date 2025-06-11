@@ -37,15 +37,19 @@ import {
   CircleCheck,
   CircleX,
 } from "lucide-react";
-import {
-  UsersService,
-  // type User,
-  type UserStats,
-} from "@/lib/database-services/users-service";
 import UserForm from "./user-form";
 import { getData, postData } from "@/services/API";
 import { toast } from "@/hooks/use-toast";
 import { User } from "@/hooks/use-auth";
+
+export interface UserStats {
+  total: number;
+  admins: number;
+  sellers: number;
+  clients: number;
+  active: number;
+  inactive: number;
+}
 
 export default function UsersManagement() {
   const [users, setUsers] = useState<User[]>([]);
@@ -69,7 +73,7 @@ export default function UsersManagement() {
     loadStats();
   }, []);
 
-  const loadUsers = async () => {
+  const loadUsers = () => {
     setLoading(true);
 
     getData("/admin/users/get-all")
@@ -88,13 +92,18 @@ export default function UsersManagement() {
       });
   };
 
-  const loadStats = async () => {
-    try {
-      const data = await UsersService.getUserStats();
-      setStats(data);
-    } catch (error) {
-      console.error("Error loading stats:", error);
-    }
+  const loadStats = () => {
+    getData("/admin/users/stats")
+      .then((res) => {
+        setStats(res.data);
+      })
+      .catch((err) => {
+        toast({
+          title: err?.response?.data?.error,
+          description: err.message,
+          variant: "destructive",
+        });
+      });
   };
 
   const handleSearch = async () => {
