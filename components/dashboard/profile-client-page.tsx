@@ -1,76 +1,94 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import type React from "react"
-import { useState, useEffect, type FormEvent } from "react"
-import { useAuth } from "@/hooks/use-auth"
-import { UsersService } from "@/lib/database-services/users-service"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { toast } from "@/hooks/use-toast"
-import { User, Shield, Mail, DollarSign, CalendarDays, Clock, Save, Loader2 } from "lucide-react"
-import type { user } from "@/lib/database.types"
+import Link from "next/link";
+import type React from "react";
+import { useState, useEffect, type FormEvent } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { UsersService } from "@/lib/database-services/users-service";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { toast } from "@/hooks/use-toast";
+import {
+  User,
+  Shield,
+  Mail,
+  DollarSign,
+  CalendarDays,
+  Clock,
+  Save,
+  Loader2,
+} from "lucide-react";
+// import type { user } from "@/lib/database.types"
 
 export default function ProfileClientPage() {
-  const { user, refreshUser } = useAuth()
-  const [username, setUsername] = useState("")
-  const [fullName, setFullName] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const { user, updateProfile, refreshUser } = useAuth();
+  const [username, setUsername] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
-      setUsername(user.username || "")
-      setFullName(user.full_name || "")
+      setUsername(user.username || "");
+      setFullName(user.full_name || "");
     }
-  }, [user])
+  }, [user]);
 
   const handleProfileUpdate = async (e: FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!user || !user) {
-      toast({ title: "Error", description: "User not authenticated.", variant: "destructive" })
-      return
-    }
-    setIsLoading(true)
-    try {
-      const updates: Partial<user> = {
-        id: user.id,
-        username,
-        full_name: fullName,
-      }
-      await UsersService.updateUser(user.id, updates)
-      await refreshUser()
-      toast({ title: "Success", description: "Profile updated successfully." })
-    } catch (error) {
-      console.error("Profile update error:", error)
       toast({
         title: "Error",
-        description: (error as Error).message || "Failed to update profile.",
+        description: "User not authenticated.",
         variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
+      });
+      return;
     }
-  }
+    setIsLoading(true);
+
+    const updateProfileResult = await updateProfile({ username, full_name: fullName });
+
+    if (updateProfileResult.success) {
+      await refreshUser();
+
+      toast({ title: "Success", description: "Profile updated successfully." });
+    } else {
+      console.error("Profile update error:", updateProfileResult.error);
+      toast({
+        title: "Error",
+        description: updateProfileResult.error || "Failed to update profile.",
+        variant: "destructive",
+      });
+    }
+
+    setIsLoading(false);
+  };
 
   if (!user && !user) {
     return (
       <div className="flex items-center justify-center h-full">
         <Loader2 className="h-12 w-12 animate-spin text-[#00ff9d]" />
       </div>
-    )
+    );
   }
 
   const getInitials = (name: string | null | undefined) => {
-    if (!name) return "U"
-    const names = name.split(" ")
+    if (!name) return "U";
+    const names = name.split(" ");
     if (names.length > 1) {
-      return names[0][0] + names[names.length - 1][0]
+      return names[0][0] + names[names.length - 1][0];
     }
-    return name.substring(0, 2)
-  }
+    return name.substring(0, 2);
+  };
 
   return (
     <div className="container mx-auto py-8 px-4 md:px-0 max-w-4xl">
@@ -99,7 +117,10 @@ export default function ProfileClientPage() {
           <form onSubmit={handleProfileUpdate} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <Label htmlFor="username" className="text-gray-400 flex items-center mb-1">
+                <Label
+                  htmlFor="username"
+                  className="text-gray-400 flex items-center mb-1"
+                >
                   <User size={16} className="mr-2 text-[#00ff9d]" /> Username
                 </Label>
                 <Input
@@ -112,7 +133,10 @@ export default function ProfileClientPage() {
                 />
               </div>
               <div>
-                <Label htmlFor="fullName" className="text-gray-400 flex items-center mb-1">
+                <Label
+                  htmlFor="fullName"
+                  className="text-gray-400 flex items-center mb-1"
+                >
                   <User size={16} className="mr-2 text-[#00ff9d]" /> Full Name
                 </Label>
                 <Input
@@ -126,7 +150,10 @@ export default function ProfileClientPage() {
               </div>
             </div>
             <div>
-              <Label htmlFor="email" className="text-gray-400 flex items-center mb-1">
+              <Label
+                htmlFor="email"
+                className="text-gray-400 flex items-center mb-1"
+              >
                 <Mail size={16} className="mr-2 text-[#00ff9d]" /> Email
               </Label>
               <Input
@@ -136,7 +163,9 @@ export default function ProfileClientPage() {
                 disabled
                 className="bg-[#2a2a3a] border-[#3a3a4a] opacity-70 cursor-not-allowed"
               />
-              <p className="text-xs text-gray-500 mt-1">Email cannot be changed here.</p>
+              <p className="text-xs text-gray-500 mt-1">
+                Email cannot be changed here.
+              </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 border-t border-[#2a2a3a]">
@@ -149,13 +178,21 @@ export default function ProfileClientPage() {
               <InfoPill
                 Icon={CalendarDays}
                 label="Joined"
-                value={user?.created_at ? new Date(user.created_at).toLocaleDateString() : "N/A"}
+                value={
+                  user?.created_at
+                    ? new Date(user.created_at).toLocaleDateString()
+                    : "N/A"
+                }
                 color="text-sky-400"
               />
               <InfoPill
                 Icon={Clock}
                 label="Last Login"
-                value={user?.last_login_at ? new Date(user.last_login_at).toLocaleString() : "N/A"}
+                value={
+                  user?.last_login_at
+                    ? new Date(user.last_login_at).toLocaleString()
+                    : "N/A"
+                }
                 color="text-purple-400"
               />
             </div>
@@ -165,7 +202,11 @@ export default function ProfileClientPage() {
               disabled={isLoading}
               className="w-full bg-[#00ff9d] text-[#1a1a1a] hover:bg-[#00e68a] font-semibold py-3 text-lg"
             >
-              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <Save size={20} className="mr-2" />}
+              {isLoading ? (
+                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+              ) : (
+                <Save size={20} className="mr-2" />
+              )}
               Save Changes
             </Button>
           </form>
@@ -173,7 +214,10 @@ export default function ProfileClientPage() {
         <CardFooter className="border-t border-[#2a2a3a] pt-6">
           <p className="text-xs text-gray-500 text-center w-full">
             For security changes like password reset or 2FA, please visit the{" "}
-            <Link href="/dashboard/settings" className="text-[#00ff9d] hover:underline">
+            <Link
+              href="/dashboard/settings"
+              className="text-[#00ff9d] hover:underline"
+            >
               Settings
             </Link>{" "}
             page.
@@ -181,17 +225,22 @@ export default function ProfileClientPage() {
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }
 
 interface InfoPillProps {
-  Icon: React.ElementType
-  label: string
-  value: string
-  color?: string
+  Icon: React.ElementType;
+  label: string;
+  value: string;
+  color?: string;
 }
 
-const InfoPill: React.FC<InfoPillProps> = ({ Icon, label, value, color = "text-[#00ff9d]" }) => (
+const InfoPill: React.FC<InfoPillProps> = ({
+  Icon,
+  label,
+  value,
+  color = "text-[#00ff9d]",
+}) => (
   <div className="bg-[#2a2a3a] p-4 rounded-lg flex items-center space-x-3">
     <Icon size={24} className={color} />
     <div>
@@ -199,4 +248,4 @@ const InfoPill: React.FC<InfoPillProps> = ({ Icon, label, value, color = "text-[
       <p className="text-sm font-semibold text-gray-200">{value}</p>
     </div>
   </div>
-)
+);

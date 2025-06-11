@@ -1,105 +1,106 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Wallet, Plus, RefreshCw, CreditCard, CheckCircle, AlertCircle, TestTube } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
-import { UsersService } from "@/lib/database-services/users-service"
-import { OxapayService } from "@/lib/payment-services/oxapay-service"
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Wallet,
+  Plus,
+  RefreshCw,
+  CreditCard,
+  CheckCircle,
+  AlertCircle,
+  TestTube,
+} from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { UsersService } from "@/lib/database-services/users-service";
+import { OxapayService } from "@/lib/payment-services/oxapay-service";
 
 export function UserWallet() {
-  const { user } = useAuth()
-  const [balance, setBalance] = useState(0)
-  const [loading, setLoading] = useState(false)
-  const [showAddFunds, setShowAddFunds] = useState(false)
-  const [amount, setAmount] = useState("")
-  const [paymentStep, setPaymentStep] = useState<"input" | "processing" | "success" | "error">("input")
-  const [paymentUrl, setPaymentUrl] = useState("")
-  const [error, setError] = useState("")
-  const [testingConnection, setTestingConnection] = useState(false)
+  const { user } = useAuth();
+  const [balance, setBalance] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [showAddFunds, setShowAddFunds] = useState(false);
+  const [amount, setAmount] = useState("");
+  const [paymentStep, setPaymentStep] = useState<
+    "input" | "processing" | "success" | "error"
+  >("input");
+  const [paymentUrl, setPaymentUrl] = useState("");
+  const [error, setError] = useState("");
+  const [testingConnection, setTestingConnection] = useState(false);
 
   useEffect(() => {
-    if (user?.id) {
-      fetchBalance()
+    if (user?._id) {
+      setBalance(user.balance || 0);
     }
-  }, [user?.id])
-
-  const fetchBalance = async () => {
-    try {
-      setLoading(true)
-      if (user?.id) {
-        const userBalance = await UsersService.getUserBalance(user.id)
-        setBalance(userBalance)
-      }
-    } catch (error) {
-      console.error("Error fetching balance:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+  }, [user?._id]);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
       minimumFractionDigits: 2,
-    }).format(price)
-  }
+    }).format(price);
+  };
 
   const testConnection = async () => {
     try {
-      setTestingConnection(true)
-      const result = await OxapayService.testConnection()
+      setTestingConnection(true);
+      const result = await OxapayService.testConnection();
       if (result.success) {
-        alert("Connection test successful! Oxapay API is working.")
+        alert("Connection test successful! Oxapay API is working.");
       } else {
-        alert(`Connection test failed: ${result.error}`)
+        alert(`Connection test failed: ${result.error}`);
       }
     } catch (error) {
-      alert(`Connection test failed: ${error}`)
+      alert(`Connection test failed: ${error}`);
     } finally {
-      setTestingConnection(false)
+      setTestingConnection(false);
     }
-  }
+  };
 
   const handleAddFunds = async () => {
     try {
-      const amountNum = Number.parseFloat(amount)
+      const amountNum = Number.parseFloat(amount);
 
       // Validation
       if (!amountNum || amountNum <= 0) {
-        setError("Please enter a valid amount")
-        return
+        setError("Please enter a valid amount");
+        return;
       }
 
       if (amountNum < 1) {
-        setError("Minimum amount is $1.00")
-        return
+        setError("Minimum amount is $1.00");
+        return;
       }
 
       if (amountNum > 10000) {
-        setError("Maximum amount is $10,000.00")
-        return
+        setError("Maximum amount is $10,000.00");
+        return;
       }
 
-      if (!user?.id) {
-        setError("You must be logged in to add funds")
-        return
+      if (!user?._id) {
+        setError("You must be logged in to add funds");
+        return;
       }
 
       if (!user.email) {
-        setError("Email address is required for payment processing")
-        return
+        setError("Email address is required for payment processing");
+        return;
       }
 
-      setError("")
-      setPaymentStep("processing")
+      setError("");
+      setPaymentStep("processing");
 
       // Generate unique order ID
-      const orderId = `wallet-${user.id}-${Date.now()}`
+      const orderId = `wallet-${user._id}-${Date.now()}`;
 
       // Create payment with Oxapay
       const paymentData = await OxapayService.createPayment({
@@ -110,7 +111,9 @@ export function UserWallet() {
         description: `Add $${amountNum.toFixed(2)} to wallet`,
         orderId: orderId,
         email: user.email,
-        thanksMessage: `Thank you for adding $${amountNum.toFixed(2)} to your wallet!`,
+        thanksMessage: `Thank you for adding $${amountNum.toFixed(
+          2
+        )} to your wallet!`,
         lifetime: 30,
         sandbox: false, // Set to true for testing
         feePaidByPayer: 1,
@@ -118,54 +121,61 @@ export function UserWallet() {
         toCurrency: "USDT",
         autoWithdrawal: false,
         mixedPayment: true,
-      })
+      });
 
       if (paymentData.success && paymentData.paymentUrl) {
-        setPaymentUrl(paymentData.paymentUrl)
-        setPaymentStep("success")
+        setPaymentUrl(paymentData.paymentUrl);
+        setPaymentStep("success");
       } else {
-        throw new Error(paymentData.error || "Failed to create payment")
+        throw new Error(paymentData.error || "Failed to create payment");
       }
     } catch (error) {
-      console.error("Error adding funds:", error)
-      const errorMessage = error instanceof Error ? error.message : "Failed to process payment"
-      setError(errorMessage)
-      setPaymentStep("error")
+      console.error("Error adding funds:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to process payment";
+      setError(errorMessage);
+      setPaymentStep("error");
     }
-  }
+  };
 
   const handleCompletePayment = () => {
     if (paymentUrl) {
       // Open payment URL in new tab
-      window.open(paymentUrl, "_blank")
+      window.open(paymentUrl, "_blank");
 
       // Show instructions
-      alert("Payment window opened. After completing payment, please refresh your balance.")
+      alert(
+        "Payment window opened. After completing payment, please refresh your balance."
+      );
 
       // Close modal
-      setShowAddFunds(false)
-      setPaymentStep("input")
-      setAmount("")
-      setError("")
+      setShowAddFunds(false);
+      setPaymentStep("input");
+      setAmount("");
+      setError("");
     }
-  }
+  };
 
   const handleCloseModal = () => {
-    setShowAddFunds(false)
-    setPaymentStep("input")
-    setAmount("")
-    setError("")
-  }
+    setShowAddFunds(false);
+    setPaymentStep("input");
+    setAmount("");
+    setError("");
+  };
 
   return (
     <>
       <Card className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border-[#2a2a3a]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-[#d1f7ff]">Wallet Balance</CardTitle>
+          <CardTitle className="text-sm font-medium text-[#d1f7ff]">
+            Wallet Balance
+          </CardTitle>
           <Wallet className="h-4 w-4 text-[#00ff9d]" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-[#00ff9d] mb-4">{loading ? "Loading..." : formatPrice(balance)}</div>
+          <div className="text-2xl font-bold text-[#00ff9d] mb-4">
+            {loading ? "Loading..." : formatPrice(balance)}
+          </div>
           <div className="flex gap-2">
             <Button
               onClick={() => setShowAddFunds(true)}
@@ -176,13 +186,15 @@ export function UserWallet() {
               Add Funds
             </Button>
             <Button
-              onClick={fetchBalance}
+              // onClick={fetchBalance}
               size="sm"
               variant="outline"
               disabled={loading}
               className="border-[#2a2a3a] text-[#d1f7ff] hover:bg-[#2a2a3a]"
             >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              <RefreshCw
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
             </Button>
             <Button
               onClick={testConnection}
@@ -192,7 +204,11 @@ export function UserWallet() {
               className="border-[#2a2a3a] text-[#d1f7ff] hover:bg-[#2a2a3a]"
               title="Test Oxapay connection"
             >
-              <TestTube className={`h-4 w-4 ${testingConnection ? "animate-pulse" : ""}`} />
+              <TestTube
+                className={`h-4 w-4 ${
+                  testingConnection ? "animate-pulse" : ""
+                }`}
+              />
             </Button>
           </div>
         </CardContent>
@@ -210,7 +226,9 @@ export function UserWallet() {
           {paymentStep === "input" && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-[#d1f7ff] mb-2 block">Amount (USD)</label>
+                <label className="text-sm font-medium text-[#d1f7ff] mb-2 block">
+                  Amount (USD)
+                </label>
                 <Input
                   type="number"
                   placeholder="Enter amount (e.g., 10.00)"
@@ -221,12 +239,16 @@ export function UserWallet() {
                   step="0.01"
                   className="bg-[#2a2a3a] border-[#3a3a4a] text-[#d1f7ff]"
                 />
-                <p className="text-xs text-[#d1f7ff]/60 mt-1">Minimum: $1.00 | Maximum: $10,000.00</p>
+                <p className="text-xs text-[#d1f7ff]/60 mt-1">
+                  Minimum: $1.00 | Maximum: $10,000.00
+                </p>
               </div>
 
               {user?.email && (
                 <div className="bg-[#2a2a3a] p-3 rounded-lg">
-                  <p className="text-xs text-[#d1f7ff]/60">Payment will be processed for:</p>
+                  <p className="text-xs text-[#d1f7ff]/60">
+                    Payment will be processed for:
+                  </p>
                   <p className="text-sm font-medium">{user.email}</p>
                 </div>
               )}
@@ -244,16 +266,24 @@ export function UserWallet() {
                   <CreditCard className="h-5 w-5 text-[#05d9e8]" />
                   <span className="text-sm">Oxapay (Cryptocurrency)</span>
                 </div>
-                <p className="text-xs text-[#d1f7ff]/60 mt-1">Secure crypto payment gateway</p>
+                <p className="text-xs text-[#d1f7ff]/60 mt-1">
+                  Secure crypto payment gateway
+                </p>
               </div>
 
               <div className="flex gap-3">
-                <Button variant="outline" onClick={handleCloseModal} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={handleCloseModal}
+                  className="flex-1"
+                >
                   Cancel
                 </Button>
                 <Button
                   onClick={handleAddFunds}
-                  disabled={!amount || Number.parseFloat(amount) <= 0 || !user?.email}
+                  disabled={
+                    !amount || Number.parseFloat(amount) <= 0 || !user?.email
+                  }
                   className="flex-1 bg-gradient-to-r from-[#ff2a6d] to-[#05d9e8]"
                 >
                   Continue to Payment
@@ -267,7 +297,9 @@ export function UserWallet() {
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#05d9e8] mx-auto"></div>
               <div>
                 <h3 className="font-medium mb-2">Creating Payment...</h3>
-                <p className="text-sm text-[#d1f7ff]/60">Please wait while we prepare your payment.</p>
+                <p className="text-sm text-[#d1f7ff]/60">
+                  Please wait while we prepare your payment.
+                </p>
               </div>
             </div>
           )}
@@ -278,15 +310,19 @@ export function UserWallet() {
               <div>
                 <h3 className="font-medium mb-2">Payment Ready!</h3>
                 <p className="text-sm text-[#d1f7ff]/60 mb-4">
-                  Click the button below to complete your payment of {formatPrice(Number.parseFloat(amount))}
+                  Click the button below to complete your payment of{" "}
+                  {formatPrice(Number.parseFloat(amount))}
                 </p>
               </div>
-              <Button onClick={handleCompletePayment} className="w-full bg-gradient-to-r from-[#ff2a6d] to-[#05d9e8]">
+              <Button
+                onClick={handleCompletePayment}
+                className="w-full bg-gradient-to-r from-[#ff2a6d] to-[#05d9e8]"
+              >
                 Complete Payment
               </Button>
               <p className="text-xs text-[#d1f7ff]/40">
-                You will be redirected to Oxapay to complete your payment securely. After payment, refresh your balance
-                to see the update.
+                You will be redirected to Oxapay to complete your payment
+                securely. After payment, refresh your balance to see the update.
               </p>
             </div>
           )}
@@ -301,13 +337,17 @@ export function UserWallet() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" onClick={handleCloseModal} className="flex-1">
+                <Button
+                  variant="outline"
+                  onClick={handleCloseModal}
+                  className="flex-1"
+                >
                   Close
                 </Button>
                 <Button
                   onClick={() => {
-                    setPaymentStep("input")
-                    setError("")
+                    setPaymentStep("input");
+                    setError("");
                   }}
                   className="flex-1"
                 >
@@ -319,5 +359,5 @@ export function UserWallet() {
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

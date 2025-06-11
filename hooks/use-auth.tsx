@@ -14,6 +14,7 @@ interface User {
   username?: string;
   full_name?: string;
   avatar_url?: string;
+  balance?: number,
   role: "admin" | "seller" | "client";
   is_active: boolean;
   admin_approved: boolean;
@@ -142,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const updateProfile = async (profileData: UpdateProfileData) => {
     try {
       const response = await fetch("/api/auth/profile", {
-        method: "PUT",
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
