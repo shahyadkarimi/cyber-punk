@@ -70,8 +70,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const navItems = getNavItems()
 
+//  <div className="flex h-screen bg-[#0d0d0f] overflow-hidden">
   return (
-    <div className="flex h-screen bg-[#0d0d0f] overflow-hidden">
+    <div className="flex bg-[#0d0d0f] overflow-hidden">
       {/* Single Sidebar */}
       <div className="w-64 bg-[#1a1a1a] border-r border-[#2a2a3a] flex flex-col">
         {/* Header */}

@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
         username: validatedData.username,
         _id: { $ne: authUser.userId },
       })
+      
       if (existingUsername) {
         return Response.json({ error: "This username is already taken" }, { status: 400 })
       }

@@ -9,6 +9,7 @@ export default function AdminDomainsPage() {
         <p className="text-gray-400">
           Oversee, approve, and manage all domain submissions and listings on the platform.
         </p>
+        
         <DomainsManagement />
       </div>
     </ProtectedRoute>

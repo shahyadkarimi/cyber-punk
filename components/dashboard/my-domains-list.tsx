@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -30,6 +30,7 @@ import {
   Plus,
   Edit,
   Trash2,
+  X,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -43,6 +44,10 @@ import {
   domainsService,
   DomainWithSeller,
 } from "@/lib/database-services/domains-service";
+import { getData, postData } from "@/services/API";
+import { Label } from "../ui/label";
+import { Alert, AlertDescription } from "../ui/alert";
+import { Textarea } from "../ui/textarea";
 
 // This would come from your domains service
 type Domain = {
@@ -52,12 +57,19 @@ type Domain = {
   status: "pending" | "approved" | "rejected" | "sold";
   created_at: string;
   description?: string;
+  tags: string[];
   category?: string;
 };
 
+const categories = [
+  { name: "Business", value: "business" },
+  { name: "Technology", value: "technology" },
+  { name: "Etc", value: "etc" },
+];
+
 export default function MyDomainsList() {
   const { user } = useAuth();
-  const [domains, setDomains] = useState<DomainWithSeller[]>([]);
+  const [domains, setDomains] = useState<Domain[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
@@ -69,44 +81,46 @@ export default function MyDomainsList() {
     category?: string;
   }>({});
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedDomain, setSelectedDomain] = useState<DomainWithSeller | null>(null);
+  const [selectedDomain, setSelectedDomain] = useState<Domain | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [tags, setTags] = useState<string[]>([]);
+  const [category, setCategory] = useState<string>("");
+  const [newTag, setNewTag] = useState("");
+  const [formData, setFormData] = useState({
+    domain: "",
+    description: "",
+    price: 0,
+  });
 
-  const fetchDomainsAndStats = useCallback(async () => {
+  const fetchDomains = () => {
     setLoading(true);
-    try {
-      const [{ domains: fetchedDomains, count }, domainStats] =
-        await Promise.all([
-          domainsService.getDomains(
-            filter.search,
-            filter.status,
-            filter.category,
-            undefined,
-            undefined,
-            page,
-            pageSize
-          ),
-          domainsService.getDomainStats(),
-        ]);
-      setDomains(fetchedDomains);
-      // setStats(domainStats)
-      setTotalCount(count);
-    } catch (error) {
-      toast({
-        title: "Error fetching domains",
-        description: (error as Error).message,
-        variant: "destructive",
+
+    getData("/user/domains/my-domains", {})
+      .then((res) => {
+        setLoading(false);
+        setDomains(res.data.domains);
+        setTotalCount(res.data.domains.length);
+      })
+      .catch((err) => {
+        setLoading(false);
+
+        setError(err?.response?.data?.error);
+
+        toast({
+          title: "Error fetching domains",
+          description: err?.response?.data?.error,
+          variant: "destructive",
+        });
       });
-    } finally {
-      setLoading(false);
-    }
-  }, [filter, page, pageSize]);
+  };
 
   useEffect(() => {
-    fetchDomainsAndStats();
-  }, [fetchDomainsAndStats]);
-
-  console.log(domains);
+    fetchDomains();
+  }, []);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilter((prev) => ({ ...prev, [key]: value }));
@@ -116,25 +130,6 @@ export default function MyDomainsList() {
   const clearFilters = () => {
     setFilter({});
     setPage(1);
-  };
-
-  const handleDeleteClick = (domain: DomainWithSeller) => {
-    setSelectedDomain(domain);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedDomain) return;
-
-    // This would be your actual delete API call
-    try {
-      // Mock deletion
-      setDomains(domains.filter((d) => d.id !== selectedDomain.id));
-      setDeleteDialogOpen(false);
-      setSelectedDomain(null);
-    } catch (err: any) {
-      setError(err.message || "Failed to delete domain");
-    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -163,6 +158,103 @@ export default function MyDomainsList() {
         currency: "USD",
       }).format(price);
     }
+  };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const addTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()]);
+      setNewTag("");
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter((tag) => tag !== tagToRemove));
+  };
+
+  const openDeleteDialogHandler = (domain: Domain) => {
+    setSelectedDomain(domain);
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteDomainHandler = () => {
+    if (!selectedDomain) return;
+    setDeleteLoading(true);
+
+    postData("/user/domains/delete-domain", {
+      id: selectedDomain?.id,
+    })
+      .then((res) => {
+        setSelectedDomain(null);
+        setDeleteDialogOpen(false);
+        setDeleteLoading(false);
+
+        // refresh domains
+        fetchDomains();
+      })
+      .catch((err) => {
+        setDeleteDialogOpen(false);
+      });
+  };
+
+  const openEditDialogHandler = (domain: Domain) => {
+    setSelectedDomain(domain);
+    setEditDialogOpen(true);
+
+    setFormData({
+      domain: domain.domain,
+      price: domain.price,
+      description: domain.description || "",
+    });
+
+    setCategory(domain.category || "");
+
+    setTags(domain.tags);
+  };
+
+  const editDomainHandler = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) return;
+    setEditError("");
+    setEditLoading(true);
+
+    postData("/user/domains/edit-domain", {
+      id: selectedDomain?.id,
+      ...formData,
+      price: Number(formData.price),
+      category,
+      tags,
+    })
+      .then((res) => {
+        // Reset form
+        setFormData({
+          domain: "",
+          description: "",
+          price: 0,
+        });
+
+        setCategory("");
+        setTags([]);
+        setNewTag("");
+        setEditLoading(false);
+        setSelectedDomain(null);
+        setEditDialogOpen(false);
+
+        // refresh domains
+        fetchDomains();
+      })
+      .catch((err) => {
+        setEditError(err?.response?.data?.error || "Login failed");
+        setEditLoading(false);
+      });
   };
 
   const totalPages = Math.ceil(totalCount / pageSize);
@@ -309,16 +401,18 @@ export default function MyDomainsList() {
                             size="sm"
                             variant="outline"
                             className="border-gray-700 hover:bg-gray-800"
+                            onClick={() => openEditDialogHandler(domain)}
                             disabled={domain.status === "sold"}
                           >
                             <Edit className="h-4 w-4" />
                             <span className="sr-only">Edit</span>
                           </Button>
+
                           <Button
                             size="sm"
                             variant="outline"
                             className="border-gray-700 hover:bg-gray-800 hover:text-red-500"
-                            onClick={() => handleDeleteClick(domain)}
+                            onClick={() => openDeleteDialogHandler(domain)}
                             disabled={domain.status === "sold"}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -368,6 +462,165 @@ export default function MyDomainsList() {
         </CardContent>
       </Card>
 
+      {/* Dialog for Edit Domain */}
+      <Dialog
+        open={editDialogOpen}
+        onOpenChange={(isOpen) => {
+          setEditDialogOpen(isOpen);
+          setFormData({
+            domain: "",
+            description: "",
+            price: 0,
+          });
+
+          setCategory("");
+          setTags([]);
+          setNewTag("");
+          if (!isOpen) setSelectedDomain(null);
+        }}
+      >
+        <DialogContent className="bg-[#141414] border-[#2a2a3a] text-white sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="text-[#00ff9d] text-2xl">
+              Edit Domain
+            </DialogTitle>
+          </DialogHeader>
+
+          {editError && (
+            <Alert className="border-red-500/50 bg-red-500/10 mb-2">
+              <AlertDescription className="text-red-400">
+                {editError}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          <form onSubmit={editDomainHandler} className="space-y-6">
+            <div>
+              <Label htmlFor="domain" className="text-white">
+                Domain Name *
+              </Label>
+              <Input
+                id="domain"
+                name="domain"
+                type="text"
+                placeholder="example.com"
+                value={formData.domain}
+                onChange={handleInputChange}
+                required
+                className="bg-gray-800 border-gray-700 text-white"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="description" className="text-white">
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                name="description"
+                placeholder="Describe your domain, its history, and potential use cases..."
+                value={formData.description}
+                onChange={handleInputChange}
+                className="bg-gray-800 border-gray-700 text-white"
+                rows={4}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="price" className="text-white">
+                  Price (USD)
+                </Label>
+                <Input
+                  id="price"
+                  name="price"
+                  type="number"
+                  placeholder="1000"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  className="bg-gray-800 border-gray-700 text-white"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="category" className="text-white">
+                  Category
+                </Label>
+
+                <Select
+                  value={category}
+                  onValueChange={(value) => setCategory(value)}
+                >
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white font-mono">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {categories.map((item) => (
+                      <SelectItem
+                        key={item.value}
+                        value={item.value}
+                        className="text-white hover:!bg-gray-700 font-mono"
+                      >
+                        {item.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label className="text-white">Tags</Label>
+              <div className="flex gap-2 mb-2">
+                <Input
+                  type="text"
+                  placeholder="Add a tag..."
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyPress={(e) =>
+                    e.key === "Enter" && (e.preventDefault(), addTag())
+                  }
+                  className="bg-gray-800 border-gray-700 text-white"
+                />
+                <Button
+                  type="button"
+                  onClick={addTag}
+                  className="bg-[#00ff9d] text-black hover:bg-[#00e68a]"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {tags.map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="bg-gray-700 text-white"
+                  >
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => removeTag(tag)}
+                      className="ml-2 text-gray-400 hover:text-white"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={editLoading || !formData.domain}
+              className="w-full bg-[#00ff9d] text-black hover:bg-[#00e68a]"
+            >
+              {editLoading ? "Editing..." : "Edit Domain"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent className="bg-black border border-gray-800">
@@ -391,8 +644,8 @@ export default function MyDomainsList() {
             >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm}>
-              Delete
+            <Button variant="destructive" onClick={deleteDomainHandler}>
+              {deleteLoading ? "Deleting..." : "Delete Domain"}
             </Button>
           </div>
         </DialogContent>
