@@ -1,29 +1,19 @@
-"use client";
+"use client"
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge"
 
-import { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-import {
-  Domain,
-  DomainWithSeller,
-} from "@/lib/database-services/domains-service";
-import { toast } from "@/hooks/use-toast";
-import { User } from "@/hooks/use-auth";
+import { useState, useEffect } from "react"
+import { useForm, Controller } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import type { Domain, User } from "@/lib/types"
+import { domainsService } from "@/lib/database-services/domains-service"
+import { toast } from "@/hooks/use-toast"
 
 const domainSchema = z.object({
   domain: z
@@ -31,70 +21,49 @@ const domainSchema = z.object({
     .min(3, "Domain name must be at least 3 characters")
     .refine((val) => {
       try {
-        const url = new URL(`http://${val}`); // Check if it's a valid hostname
-        return url.hostname === val && val.includes(".");
+        const url = new URL(`http://${val}`) // Check if it's a valid hostname
+        return url.hostname === val && val.includes(".")
       } catch (e) {
-        return false;
+        return false
       }
     }, "Must be a valid domain name (e.g., example.com)"),
   description: z.string().optional(),
   price: z.preprocess(
-    (val) =>
-      val === "" || val === undefined || val === null
-        ? undefined
-        : Number.parseFloat(String(val)),
-    z
-      .number({ invalid_type_error: "Price must be a number" })
-      .positive("Price must be positive")
-      .optional()
+    (val) => (val === "" || val === undefined || val === null ? undefined : Number.parseFloat(String(val))),
+    z.number({ invalid_type_error: "Price must be a number" }).positive("Price must be positive").optional(),
   ),
   status: z.enum(["pending", "approved", "rejected", "sold"]),
   seller_id: z.string().uuid("Invalid seller ID").optional().nullable(),
   admin_notes: z.string().optional(),
   da_score: z.preprocess(
-    (val) =>
-      val === "" || val === undefined || val === null
-        ? undefined
-        : Number.parseFloat(String(val)),
-    z.number().min(0).max(100).optional()
+    (val) => (val === "" || val === undefined || val === null ? undefined : Number.parseFloat(String(val))),
+    z.number().min(0).max(100).optional(),
   ),
   pa_score: z.preprocess(
-    (val) =>
-      val === "" || val === undefined || val === null
-        ? undefined
-        : Number.parseFloat(String(val)),
-    z.number().min(0).max(100).optional()
+    (val) => (val === "" || val === undefined || val === null ? undefined : Number.parseFloat(String(val))),
+    z.number().min(0).max(100).optional(),
   ),
   traffic: z.preprocess(
-    (val) =>
-      val === "" || val === undefined || val === null
-        ? undefined
-        : Number.parseInt(String(val), 10),
-    z.number().int().min(0).optional()
+    (val) => (val === "" || val === undefined || val === null ? undefined : Number.parseInt(String(val), 10)),
+    z.number().int().min(0).optional(),
   ),
   category: z.string().optional(),
   tags: z.array(z.string()).optional(),
-});
+})
 
-type DomainFormData = z.infer<typeof domainSchema>;
+type DomainFormData = z.infer<typeof domainSchema>
 
 interface DomainFormProps {
-  initialData?: Partial<DomainWithSeller> | null;
-  onSubmit: (data: Partial<DomainWithSeller>) => Promise<void>;
-  onCancel: () => void;
+  initialData?: Partial<Domain> | null
+  onSubmit: (data: Partial<Domain>) => Promise<void>
+  onCancel: () => void
 }
 
-export default function DomainForm({
-  initialData,
-  onSubmit,
-  onCancel,
-}: DomainFormProps) {
-  const [currentTags, setCurrentTags] = useState<string[]>(
-    initialData?.tags || []
-  );
-  const [tagInput, setTagInput] = useState("");
-  const [sellers, setSellers] = useState([]);
-  const [isLoadingSellers, setIsLoadingSellers] = useState(false);
+export default function DomainForm({ initialData, onSubmit, onCancel }: DomainFormProps) {
+  const [currentTags, setCurrentTags] = useState<string[]>(initialData?.tags || [])
+  const [tagInput, setTagInput] = useState("")
+  const [sellers, setSellers] = useState<Pick<User, "id" | "username" | "email">[]>([])
+  const [isLoadingSellers, setIsLoadingSellers] = useState(false)
 
   const {
     control,
@@ -102,73 +71,93 @@ export default function DomainForm({
     register,
     reset,
     formState: { errors, isSubmitting },
-  } = useForm({
+  } = useForm<DomainFormData>({
+    resolver: zodResolver(domainSchema),
     defaultValues: {
       domain: initialData?.domain || "",
-      description: initialData?.description || null,
-      price: initialData?.price || null,
+      description: initialData?.description || "",
+      price: initialData?.price || undefined,
       status: initialData?.status || "pending",
-      seller_id: initialData?.seller_id || "",
-      admin_notes: initialData?.admin_notes || null,
-      da_score: initialData?.da_score || null,
-      pa_score: initialData?.pa_score || null,
-      traffic: initialData?.traffic || null,
-      category: initialData?.category || null,
+      seller_id: initialData?.seller_id || null,
+      admin_notes: initialData?.admin_notes || "",
+      da_score: initialData?.da_score || undefined,
+      pa_score: initialData?.pa_score || undefined,
+      traffic: initialData?.traffic || undefined,
+      category: initialData?.category || "",
       tags: initialData?.tags || [],
     },
-  });
+  })
 
   useEffect(() => {
-    console.log(initialData);
     if (initialData) {
       reset({
         ...initialData,
-        price: initialData?.price || null,
-        da_score: initialData?.da_score || null,
-        pa_score: initialData?.pa_score || null,
-        traffic: initialData?.traffic || null,
-        seller_id: initialData?.seller_id || "", // Ensure null if undefined
-      });
-
-      setCurrentTags(initialData.tags || []);
+        price: initialData.price ?? undefined,
+        da_score: initialData.da_score ?? undefined,
+        pa_score: initialData.pa_score ?? undefined,
+        traffic: initialData.traffic ?? undefined,
+        seller_id: initialData.seller_id || null, // Ensure null if undefined
+      })
+      setCurrentTags(initialData.tags || [])
     } else {
       reset({
         domain: "",
         description: "",
-        price: null,
+        price: undefined,
         status: "pending",
-        seller_id: "",
+        seller_id: null,
         admin_notes: "",
-        da_score: null,
-        pa_score: null,
-        traffic: null,
+        da_score: undefined,
+        pa_score: undefined,
+        traffic: undefined,
         category: "",
         tags: [],
-      });
-      setCurrentTags([]);
+      })
+      setCurrentTags([])
     }
-  }, [initialData, reset]);
+  }, [initialData, reset])
 
-  useEffect(() => {}, []);
+  useEffect(() => {
+    const fetchSellers = async () => {
+      setIsLoadingSellers(true)
+      try {
+        const fetchedSellers = await domainsService.getSellers()
+        setSellers(fetchedSellers)
+      } catch (error) {
+        toast({ title: "Error fetching sellers", description: (error as Error).message, variant: "destructive" })
+      } finally {
+        setIsLoadingSellers(false)
+      }
+    }
+    fetchSellers()
+  }, [])
 
   const handleTagAdd = () => {
     if (tagInput && !currentTags.includes(tagInput.trim())) {
-      setCurrentTags([...currentTags, tagInput.trim()]);
-      setTagInput("");
+      setCurrentTags([...currentTags, tagInput.trim()])
+      setTagInput("")
     }
-  };
+  }
 
   const handleTagRemove = (tagToRemove: string) => {
-    setCurrentTags(currentTags.filter((tag) => tag !== tagToRemove));
-  };
+    setCurrentTags(currentTags.filter((tag) => tag !== tagToRemove))
+  }
 
-  const submitFormHandler = () => {};
+  const processFormSubmit = async (data: DomainFormData) => {
+    const dataToSubmit: Partial<Domain> = {
+      ...data,
+      tags: currentTags,
+      price: data.price === undefined ? null : data.price, // Ensure price is null if undefined
+      da_score: data.da_score === undefined ? null : data.da_score,
+      pa_score: data.pa_score === undefined ? null : data.pa_score,
+      traffic: data.traffic === undefined ? null : data.traffic,
+      seller_id: data.seller_id === "" ? null : data.seller_id, // Ensure seller_id is null if empty string
+    }
+    await onSubmit(dataToSubmit)
+  }
 
   return (
-    <form
-      onSubmit={handleSubmit(submitFormHandler)}
-      className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-2"
-    >
+    <form onSubmit={handleSubmit(processFormSubmit)} className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
       <div>
         <Label htmlFor="domain" className="text-gray-300">
           Domain Name
@@ -178,9 +167,7 @@ export default function DomainForm({
           {...register("domain")}
           className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
         />
-        {errors.domain && (
-          <p className="text-red-400 text-sm mt-1">{errors.domain.message}</p>
-        )}
+        {errors.domain && <p className="text-red-400 text-sm mt-1">{errors.domain.message}</p>}
       </div>
 
       <div>
@@ -192,11 +179,7 @@ export default function DomainForm({
           {...register("description")}
           className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
         />
-        {errors.description && (
-          <p className="text-red-400 text-sm mt-1">
-            {errors.description.message}
-          </p>
-        )}
+        {errors.description && <p className="text-red-400 text-sm mt-1">{errors.description.message}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -211,9 +194,7 @@ export default function DomainForm({
             {...register("price")}
             className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
           />
-          {errors.price && (
-            <p className="text-red-400 text-sm mt-1">{errors.price.message}</p>
-          )}
+          {errors.price && <p className="text-red-400 text-sm mt-1">{errors.price.message}</p>}
         </div>
         <div>
           <Label htmlFor="status" className="text-gray-300">
@@ -236,9 +217,7 @@ export default function DomainForm({
               </Select>
             )}
           />
-          {errors.status && (
-            <p className="text-red-400 text-sm mt-1">{errors.status.message}</p>
-          )}
+          {errors.status && <p className="text-red-400 text-sm mt-1">{errors.status.message}</p>}
         </div>
       </div>
 
@@ -256,18 +235,12 @@ export default function DomainForm({
               disabled={isLoadingSellers}
             >
               <SelectTrigger className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]">
-                <SelectValue
-                  placeholder={
-                    isLoadingSellers
-                      ? "Loading sellers..."
-                      : "Select seller (optional)"
-                  }
-                />
+                <SelectValue placeholder={isLoadingSellers ? "Loading sellers..." : "Select seller (optional)"} />
               </SelectTrigger>
               <SelectContent className="bg-[#0d0d0d] border-[#2a2a3a] text-white">
                 <SelectItem value="none">None (Platform Owned)</SelectItem>
-                {sellers.map((seller: User) => (
-                  <SelectItem key={seller._id} value={seller._id}>
+                {sellers.map((seller) => (
+                  <SelectItem key={seller.id} value={seller.id}>
                     {seller.username || seller.email}
                   </SelectItem>
                 ))}
@@ -275,11 +248,7 @@ export default function DomainForm({
             </Select>
           )}
         />
-        {errors.seller_id && (
-          <p className="text-red-400 text-sm mt-1">
-            {errors.seller_id.message}
-          </p>
-        )}
+        {errors.seller_id && <p className="text-red-400 text-sm mt-1">{errors.seller_id.message}</p>}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -293,11 +262,7 @@ export default function DomainForm({
             {...register("da_score")}
             className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
           />
-          {errors.da_score && (
-            <p className="text-red-400 text-sm mt-1">
-              {errors.da_score.message}
-            </p>
-          )}
+          {errors.da_score && <p className="text-red-400 text-sm mt-1">{errors.da_score.message}</p>}
         </div>
         <div>
           <Label htmlFor="pa_score" className="text-gray-300">
@@ -309,11 +274,7 @@ export default function DomainForm({
             {...register("pa_score")}
             className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
           />
-          {errors.pa_score && (
-            <p className="text-red-400 text-sm mt-1">
-              {errors.pa_score.message}
-            </p>
-          )}
+          {errors.pa_score && <p className="text-red-400 text-sm mt-1">{errors.pa_score.message}</p>}
         </div>
         <div>
           <Label htmlFor="traffic" className="text-gray-300">
@@ -325,11 +286,7 @@ export default function DomainForm({
             {...register("traffic")}
             className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
           />
-          {errors.traffic && (
-            <p className="text-red-400 text-sm mt-1">
-              {errors.traffic.message}
-            </p>
-          )}
+          {errors.traffic && <p className="text-red-400 text-sm mt-1">{errors.traffic.message}</p>}
         </div>
       </div>
 
@@ -342,9 +299,7 @@ export default function DomainForm({
           {...register("category")}
           className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
         />
-        {errors.category && (
-          <p className="text-red-400 text-sm mt-1">{errors.category.message}</p>
-        )}
+        {errors.category && <p className="text-red-400 text-sm mt-1">{errors.category.message}</p>}
       </div>
 
       <div>
@@ -358,8 +313,8 @@ export default function DomainForm({
             onChange={(e) => setTagInput(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                e.preventDefault();
-                handleTagAdd();
+                e.preventDefault()
+                handleTagAdd()
               }
             }}
             placeholder="Add a tag and press Enter"
@@ -376,11 +331,7 @@ export default function DomainForm({
         </div>
         <div className="mt-2 flex flex-wrap gap-2">
           {currentTags.map((tag) => (
-            <Badge
-              key={tag}
-              variant="secondary"
-              className="bg-[#2a2a3a] text-gray-300 border-[#3a3a4a]"
-            >
+            <Badge key={tag} variant="secondary" className="bg-[#2a2a3a] text-gray-300 border-[#3a3a4a]">
               {tag}
               <button
                 type="button"
@@ -403,11 +354,7 @@ export default function DomainForm({
           {...register("admin_notes")}
           className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
         />
-        {errors.admin_notes && (
-          <p className="text-red-400 text-sm mt-1">
-            {errors.admin_notes.message}
-          </p>
-        )}
+        {errors.admin_notes && <p className="text-red-400 text-sm mt-1">{errors.admin_notes.message}</p>}
       </div>
 
       <div className="flex justify-end gap-4 pt-4">
@@ -419,18 +366,10 @@ export default function DomainForm({
         >
           Cancel
         </Button>
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="bg-[#00ff9d] text-black hover:bg-[#00cc88]"
-        >
-          {isSubmitting
-            ? "Saving..."
-            : initialData
-            ? "Save Changes"
-            : "Create Domain"}
+        <Button type="submit" disabled={isSubmitting} className="bg-[#00ff9d] text-black hover:bg-[#00cc88]">
+          {isSubmitting ? "Saving..." : initialData ? "Save Changes" : "Create Domain"}
         </Button>
       </div>
     </form>
-  );
+  )
 }

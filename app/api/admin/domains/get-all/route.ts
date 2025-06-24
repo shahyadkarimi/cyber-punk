@@ -32,16 +32,31 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    const domains = await Domains.find(query)
+    const domains = await Domains.find({ ...query, deleted_at: null })
       .populate("seller_id", "id username email")
       .populate("approved_by", "id username email")
       .sort({ created_at: -1 })
       .lean();
 
     const formatted = domains.map((item) => ({
-      ...item,
       id: item._id,
+      domain: item.domain,
+      description: item.description,
+      price: item.price,
+      status: item.status,
       seller: item.seller_id,
+      buyer_id: item.buyer_id,
+      admin_notes: item.admin_notes,
+      da_score: item.da_score,
+      pa_score: item.pa_score,
+      traffic: item.traffic,
+      category: item.category,
+      tags: item.tags,
+      approved_at: item.approved_at,
+      approved_by: item.approved_by,
+      sold_at: item.sold_at,
+      created_at: item.created_at,
+      deleted_at: item.deleted_at,
     }));
 
     return NextResponse.json({ domains: formatted }, { status: 200 });

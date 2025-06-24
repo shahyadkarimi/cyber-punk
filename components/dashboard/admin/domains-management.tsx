@@ -62,9 +62,11 @@ export default function DomainsManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [editingDomain, setEditingDomain] = useState<DomainWithSeller | null>(
+  const [selectedDomain, setSelectedDomain] = useState<DomainWithSeller | null>(
     null
   );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [stats, setStats] = useState<any>({});
   const [page, setPage] = useState(1);
@@ -103,69 +105,50 @@ export default function DomainsManagement() {
       });
       return;
     }
-    try {
-      if (editingDomain) {
-        await domainsService.updateDomain(
-          editingDomain.id,
-          domainData,
-          user._id
-        );
-        toast({
-          title: "Domain Updated",
-          description: `${
-            domainData.domain || editingDomain.domain
-          } has been updated.`,
+
+    if (selectedDomain) {
+      postData("edit", {})
+        .then((res) => {
+          toast({
+            title: "Domain Updated",
+            description: `${
+              domainData.domain || selectedDomain?.domain
+            } has been updated.`,
+          });
+        })
+        .catch((res) => {
+          toast({
+            title: "Error saving domain",
+            description: "(error as Error).message",
+            variant: "destructive",
+          });
         });
-      } else {
-        await domainsService.createDomain(domainData, user._id);
-        toast({
-          title: "Domain Created",
-          description: `${domainData.domain} has been created.`,
+    } else {
+      postData("create", {})
+        .then((res) => {
+          toast({
+            title: "Domain Created",
+            description: `${domainData.domain} has been created.`,
+          });
+        })
+        .catch((res) => {
+          toast({
+            title: "Error saving domain",
+            description: "(error as Error).message",
+            variant: "destructive",
+          });
         });
-      }
-      setEditingDomain(null);
-      setIsFormOpen(false);
-      fetchDomains(); // Refresh data
-    } catch (error) {
-      toast({
-        title: "Error saving domain",
-        description: (error as Error).message,
-        variant: "destructive",
-      });
     }
   };
 
   const openEditDialog = (domain: DomainWithSeller) => {
-    setEditingDomain(domain);
+    setSelectedDomain(domain);
     setIsFormOpen(true);
   };
 
   const openAddNewDialog = () => {
-    setEditingDomain(null);
+    setSelectedDomain(null);
     setIsFormOpen(true);
-  };
-
-  const deleteDomainHanler = async (domainId: string, domainName: string) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete ${domainName}? This action cannot be undone.`
-      )
-    ) {
-      try {
-        await domainsService.deleteDomain(domainId);
-        toast({
-          title: "Domain Deleted",
-          description: `${domainName} has been deleted.`,
-        });
-        fetchDomains(); // Refresh data
-      } catch (error) {
-        toast({
-          title: "Error deleting domain",
-          description: (error as Error).message,
-          variant: "destructive",
-        });
-      }
-    }
   };
 
   const changeDomainStatusHandler = async (
@@ -201,6 +184,31 @@ export default function DomainsManagement() {
           description: err?.response?.data?.error,
           variant: "destructive",
         });
+      });
+  };
+
+  const openDeleteDialogHandler = (domain: DomainWithSeller) => {
+    setSelectedDomain(domain);
+    setDeleteDialogOpen(true);
+  };
+
+  const deleteDomainHandler = () => {
+    if (!selectedDomain) return;
+    setDeleteLoading(true);
+
+    postData("/admin/domains/delete", {
+      id: selectedDomain?.id,
+    })
+      .then((res) => {
+        setSelectedDomain(null);
+        setDeleteDialogOpen(false);
+        setDeleteLoading(false);
+
+        // refresh domains
+        fetchDomains();
+      })
+      .catch((err) => {
+        setDeleteDialogOpen(false);
       });
   };
 
@@ -355,22 +363,22 @@ export default function DomainsManagement() {
                     {domain.status === "pending" && (
                       <>
                         <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-gray-700 hover:bg-gray-800 text-green-500 hover:text-green-400"
                           onClick={() =>
                             changeDomainStatusHandler(domain, "approved")
                           }
-                          size="sm"
-                          variant="ghost"
-                          className="text-green-400 hover:text-green-300 p-1 h-auto"
                         >
                           <CheckCircle className="h-4 w-4" />
                         </Button>
                         <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-gray-700 hover:bg-gray-800 text-red-400 hover:text-red-300"
                           onClick={() =>
                             changeDomainStatusHandler(domain, "rejected")
                           }
-                          size="sm"
-                          variant="ghost"
-                          className="text-red-400 hover:text-red-300 p-1 h-auto"
                         >
                           <XCircle className="h-4 w-4" />
                         </Button>
@@ -378,22 +386,24 @@ export default function DomainsManagement() {
                     )}
 
                     <Button
-                      onClick={() => openEditDialog(domain)}
                       size="sm"
-                      variant="ghost"
-                      className="text-blue-400 hover:text-blue-300 p-1 h-auto"
+                      variant="outline"
+                      className="border-gray-700 hover:bg-gray-800 text-blue-500 hover:text-blue-400"
+                      onClick={() => openEditDialog(domain)}
                     >
                       <Edit3 className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
                     </Button>
+
                     <Button
-                      onClick={() =>
-                        deleteDomainHanler(domain.id, domain.domain)
-                      }
                       size="sm"
-                      variant="ghost"
-                      className="text-red-500 hover:text-red-400 p-1 h-auto"
+                      variant="outline"
+                      className="border-gray-700 hover:bg-gray-800 text-red-500 hover:text-red-400"
+                      onClick={() => openDeleteDialogHandler(domain)}
+                      disabled={domain.status === "sold"}
                     >
                       <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -440,23 +450,54 @@ export default function DomainsManagement() {
         open={isFormOpen}
         onOpenChange={(isOpen) => {
           setIsFormOpen(isOpen);
-          if (!isOpen) setEditingDomain(null);
+          if (!isOpen) setSelectedDomain(null);
         }}
       >
         <DialogContent className="bg-[#141414] border-[#2a2a3a] text-white sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle className="text-[#00ff9d] text-2xl">
-              {editingDomain ? "Edit Domain" : "Add New Domain"}
+              {selectedDomain ? "Edit Domain" : "Add New Domain"}
             </DialogTitle>
           </DialogHeader>
+
           <DomainForm
-            initialData={editingDomain}
+            initialData={selectedDomain}
             onSubmit={handleFormSubmit}
             onCancel={() => {
               setIsFormOpen(false);
-              setEditingDomain(null);
+              setSelectedDomain(null);
             }}
           />
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent className="bg-black border border-gray-800">
+          <DialogHeader>
+            <DialogTitle className="text-[#00ff9d]">
+              Confirm Deletion
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p>
+              Are you sure you want to delete the domain{" "}
+              <span className="font-semibold">{selectedDomain?.domain}</span>?
+            </p>
+            <p className="text-gray-400 mt-2">This action cannot be undone.</p>
+          </div>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              className="border-gray-700 hover:bg-gray-800"
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={deleteDomainHandler}>
+              {deleteLoading ? "Deleting..." : "Delete Domain"}
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
