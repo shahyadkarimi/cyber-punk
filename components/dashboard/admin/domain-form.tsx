@@ -24,6 +24,7 @@ import {
 } from "@/lib/database-services/domains-service";
 import { toast } from "@/hooks/use-toast";
 import { User } from "@/hooks/use-auth";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const domainSchema = z.object({
   domain: z
@@ -82,7 +83,8 @@ interface DomainFormProps {
   initialData?: Partial<DomainWithSeller> | null;
   onSubmit: (data: Partial<DomainWithSeller>) => Promise<void>;
   onCancel: () => void;
-  loading: boolean,
+  loading: boolean;
+  error: string;
 }
 
 export default function DomainForm({
@@ -90,6 +92,7 @@ export default function DomainForm({
   onSubmit,
   onCancel,
   loading,
+  error,
 }: DomainFormProps) {
   const [currentTags, setCurrentTags] = useState<string[]>(
     initialData?.tags || []
@@ -103,6 +106,7 @@ export default function DomainForm({
     handleSubmit,
     register,
     reset,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -121,7 +125,6 @@ export default function DomainForm({
   });
 
   useEffect(() => {
-
     if (!initialData) {
       reset({
         domain: "",
@@ -137,6 +140,8 @@ export default function DomainForm({
         tags: [],
       });
       setCurrentTags([]);
+    } else {
+      setCurrentTags(initialData.tags || []);
     }
   }, [initialData, reset]);
 
@@ -145,12 +150,16 @@ export default function DomainForm({
   const handleTagAdd = () => {
     if (tagInput && !currentTags.includes(tagInput.trim())) {
       setCurrentTags([...currentTags, tagInput.trim()]);
+      setValue("tags", [...currentTags, tagInput.trim()]);
       setTagInput("");
     }
   };
 
   const handleTagRemove = (tagToRemove: string) => {
-    setCurrentTags(currentTags.filter((tag) => tag !== tagToRemove));
+    const newData = currentTags.filter((tag) => tag !== tagToRemove);
+    setValue("tags", newData);
+
+    setCurrentTags(newData);
   };
 
   return (
@@ -158,6 +167,12 @@ export default function DomainForm({
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-2"
     >
+      {error && (
+        <Alert className="border-red-500/50 bg-red-500/10 mb-2">
+          <AlertDescription className="text-red-400">{error}</AlertDescription>
+        </Alert>
+      )}
+
       <div>
         <Label htmlFor="domain" className="text-gray-300">
           Domain Name

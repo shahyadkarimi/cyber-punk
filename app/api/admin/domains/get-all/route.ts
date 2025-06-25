@@ -4,7 +4,7 @@ import { getAuthUser } from "@/lib/auth";
 import Domains from "@/models/DomainsModel"; // مدل دامین
 import User from "@/models/UsersModel"; // برای جمع‌کردن seller و approved_by_user اگر Populate خواستی
 
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
     await connectDB();
 
@@ -17,19 +17,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const search = searchParams.get("search");
+    const { search, filter } = await request.json();
 
     const query: any = {};
 
+    const andConditions = [];
+
     if (search) {
       const regex = new RegExp(search, "i");
-      query.$or = [
-        { domain: regex },
-        { description: regex },
-        { category: regex },
-        { tags: { $in: [regex] } },
-      ];
+      andConditions.push({
+        $or: [
+          { domain: regex },
+          // { description: regex },
+          // { category: regex },
+        ],
+      });
+    }
+
+    if (filter) {
+      const regex = new RegExp(filter, "i");
+      andConditions.push({ status: regex });
+    }
+
+    if (andConditions.length > 0) {
+      query.$and = andConditions;
     }
 
     const domains = await Domains.find({ ...query, deleted_at: null })
@@ -37,6 +48,13 @@ export async function GET(request: NextRequest) {
       .populate("approved_by", "id username email")
       .sort({ created_at: -1 })
       .lean();
+
+    const [total, pending, approved, rejected] = await Promise.all([
+      Domains.countDocuments({ deleted_at: null }),
+      Domains.countDocuments({ status: "pending", deleted_at: null }),
+      Domains.countDocuments({ status: "approved", deleted_at: null }),
+      Domains.countDocuments({ status: "rejected", deleted_at: null }),
+    ]);
 
     const formatted = domains.map((item) => ({
       id: item._id,
@@ -59,7 +77,13 @@ export async function GET(request: NextRequest) {
       deleted_at: item.deleted_at,
     }));
 
-    return NextResponse.json({ domains: formatted }, { status: 200 });
+    return NextResponse.json(
+      {
+        domains: formatted,
+        stats: { total, pending, approved, rejected, total_revenue: 0 },
+      },
+      { status: 200 }
+    );
   } catch (error: any) {
     console.error("Get domains error:", error);
     return NextResponse.json(

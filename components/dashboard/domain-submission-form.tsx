@@ -102,7 +102,7 @@ export default function DomainSubmissionForm() {
         }, 2000);
       })
       .catch((err) => {
-        setError(err?.response?.data?.error || "Login failed");
+        setError(err?.response?.data?.error || "Submit domain failed");
         setLoading(false);
       });
   };

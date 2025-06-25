@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const DomainData = editDomainAdmin.safeParse(body);
+    // const DomainData = body;
 
     if (!DomainData.success) {
       const message = DomainData.error.errors[0]?.message || "Invalid input.";
@@ -56,13 +57,6 @@ export async function POST(request: NextRequest) {
 
     if (!userDomain) {
       return NextResponse.json({ error: "Domain not found." }, { status: 404 });
-    }
-
-    if (userDomain.seller_id.toString() !== authUser.userId) {
-      return NextResponse.json(
-        { error: "You are not allowed to edit this domain." },
-        { status: 403 }
-      );
     }
 
     const editedDomain = await Domains.findByIdAndUpdate(

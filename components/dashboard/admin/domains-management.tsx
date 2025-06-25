@@ -73,14 +73,15 @@ export default function DomainsManagement() {
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
   const [totalDomains, setTotalDomains] = useState(0);
+  const [error, setError] = useState("");
 
-  const fetchDomains = () => {
+  const fetchDomains = (filter?: string, search?: string) => {
     setLoading(true);
 
-    getData("/admin/domains/get-all")
+    postData("/admin/domains/get-all", { filter, search })
       .then((res) => {
         setDomains(res.data.domains);
-
+        setStats(res.data.stats);
         setLoading(false);
       })
       .catch((err) => {
@@ -97,7 +98,7 @@ export default function DomainsManagement() {
     fetchDomains();
   }, []);
 
-  const handleFormSubmit = async (domainData: Partial<DomainWithSeller>) => {
+  const AddEditFormHandler = async (domainData: Partial<DomainWithSeller>) => {
     if (!user?._id) {
       toast({
         title: "Authentication Error",
@@ -107,9 +108,19 @@ export default function DomainsManagement() {
       return;
     }
 
+    setError("");
+
+    setFormLoading(true);
+
     if (selectedDomain) {
-      setFormLoading(true);
-      postData("/admin/domains/edit", { ...domainData })
+      postData("/admin/domains/edit", {
+        id: selectedDomain.id,
+        ...domainData,
+        price: Number(domainData.price),
+        da_score: Number(domainData.da_score),
+        pa_score: Number(domainData.pa_score),
+        traffic: Number(domainData.traffic),
+      })
         .then((res) => {
           setFormLoading(false);
 
@@ -119,28 +130,39 @@ export default function DomainsManagement() {
               domainData.domain || selectedDomain?.domain
             } has been updated.`,
           });
+
+          setIsFormOpen(false);
+
+          fetchDomains();
         })
-        .catch((res) => {
-          toast({
-            title: "Error saving domain",
-            description: "(error as Error).message",
-            variant: "destructive",
-          });
+        .catch((err) => {
+          setFormLoading(false);
+          setError(err?.response?.data?.error || "Edit domain failed");
         });
     } else {
-      postData("create", {})
+      postData("/admin/domains/create", {
+        ...domainData,
+        seller_id: domainData.seller_id || user._id,
+        price: Number(domainData.price),
+        da_score: Number(domainData.da_score),
+        pa_score: Number(domainData.pa_score),
+        traffic: Number(domainData.traffic),
+      })
         .then((res) => {
+          setFormLoading(false);
+
           toast({
-            title: "Domain Created",
-            description: `${domainData.domain} has been created.`,
+            title: "Domain Updated",
+            description: `${domainData?.domain} has been updated.`,
           });
+
+          setIsFormOpen(false);
+
+          fetchDomains();
         })
-        .catch((res) => {
-          toast({
-            title: "Error saving domain",
-            description: "(error as Error).message",
-            variant: "destructive",
-          });
+        .catch((err) => {
+          setFormLoading(false);
+          setError(err?.response?.data?.error || "Create domain failed");
         });
     }
   };
@@ -152,7 +174,7 @@ export default function DomainsManagement() {
 
   const closeFormDialog = () => {
     setSelectedDomain(null);
-    setIsFormOpen(true);
+    setIsFormOpen(false);
   };
 
   const openAddNewDialog = () => {
@@ -228,25 +250,25 @@ export default function DomainsManagement() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[
-          { title: "Total Domains", value: stats.totalDomains, icon: Globe },
+          { title: "Total Domains", value: stats.total, icon: Globe },
           {
             title: "Pending Approval",
-            value: stats.pendingDomains,
+            value: stats.pending,
             icon: Clock,
           },
           {
             title: "Approved Domains",
-            value: stats.approvedDomains,
+            value: stats.approved,
             icon: CheckCircle,
           },
           {
             title: "Rejected Domains",
-            value: stats.rejectedDomains,
+            value: stats.rejected,
             icon: XCircle,
           },
           {
             title: "Total Revenue",
-            value: `$${stats.totalRevenue?.toFixed(2)}`,
+            value: `$${stats.total_revenue?.toFixed(2)}`,
             icon: DollarSign,
           },
         ].map((stat) => (
@@ -274,6 +296,16 @@ export default function DomainsManagement() {
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
+
+              if (e.target.value.length) {
+                fetchDomains(
+                  statusFilter === "all" ? "" : statusFilter,
+                  e.target.value
+                );
+              } else if (e.target.value.length === 0) {
+                fetchDomains(statusFilter === "all" ? "" : statusFilter);
+              }
+
               setPage(1);
             }}
             className="pl-10 bg-[#1a1a1a] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
@@ -284,6 +316,9 @@ export default function DomainsManagement() {
           value={statusFilter}
           onValueChange={(value) => {
             setStatusFilter(value === "all" ? "" : value);
+
+            fetchDomains(value === "all" ? "" : value, searchTerm);
+
             setPage(1);
           }}
         >
@@ -465,9 +500,10 @@ export default function DomainsManagement() {
 
           <DomainForm
             initialData={selectedDomain}
-            onSubmit={handleFormSubmit}
+            onSubmit={AddEditFormHandler}
             onCancel={closeFormDialog}
-            loading={loading}
+            loading={formloading}
+            error={error}
           />
         </DialogContent>
       </Dialog>
