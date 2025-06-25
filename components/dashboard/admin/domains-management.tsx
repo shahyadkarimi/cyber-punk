@@ -68,6 +68,7 @@ export default function DomainsManagement() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [formloading, setFormLoading] = useState(false);
   const [stats, setStats] = useState<any>({});
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
@@ -96,7 +97,7 @@ export default function DomainsManagement() {
     fetchDomains();
   }, []);
 
-  const handleFormSubmit = async (domainData: DomainWithSeller) => {
+  const handleFormSubmit = async (domainData: Partial<DomainWithSeller>) => {
     if (!user?._id) {
       toast({
         title: "Authentication Error",
@@ -107,8 +108,11 @@ export default function DomainsManagement() {
     }
 
     if (selectedDomain) {
-      postData("edit", {})
+      setFormLoading(true);
+      postData("/admin/domains/edit", { ...domainData })
         .then((res) => {
+          setFormLoading(false);
+
           toast({
             title: "Domain Updated",
             description: `${
@@ -141,8 +145,13 @@ export default function DomainsManagement() {
     }
   };
 
-  const openEditDialog = (domain: DomainWithSeller) => {
+  const openFormDialog = (domain: DomainWithSeller) => {
     setSelectedDomain(domain);
+    setIsFormOpen(true);
+  };
+
+  const closeFormDialog = () => {
+    setSelectedDomain(null);
     setIsFormOpen(true);
   };
 
@@ -389,7 +398,7 @@ export default function DomainsManagement() {
                       size="sm"
                       variant="outline"
                       className="border-gray-700 hover:bg-gray-800 text-blue-500 hover:text-blue-400"
-                      onClick={() => openEditDialog(domain)}
+                      onClick={() => openFormDialog(domain)}
                     >
                       <Edit3 className="h-4 w-4" />
                       <span className="sr-only">Delete</span>
@@ -446,13 +455,7 @@ export default function DomainsManagement() {
       )}
 
       {/* Dialog for Add/Edit Domain */}
-      <Dialog
-        open={isFormOpen}
-        onOpenChange={(isOpen) => {
-          setIsFormOpen(isOpen);
-          if (!isOpen) setSelectedDomain(null);
-        }}
-      >
+      <Dialog open={isFormOpen} onOpenChange={closeFormDialog}>
         <DialogContent className="bg-[#141414] border-[#2a2a3a] text-white sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle className="text-[#00ff9d] text-2xl">
@@ -463,10 +466,8 @@ export default function DomainsManagement() {
           <DomainForm
             initialData={selectedDomain}
             onSubmit={handleFormSubmit}
-            onCancel={() => {
-              setIsFormOpen(false);
-              setSelectedDomain(null);
-            }}
+            onCancel={closeFormDialog}
+            loading={loading}
           />
         </DialogContent>
       </Dialog>

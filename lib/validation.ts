@@ -77,3 +77,23 @@ export const editDomain = z.object({
     .optional()
     .nullable(),
 });
+
+export const editDomainAdmin = z.object({
+  id: z.string().min(1, "Domain id is required"),
+  domain: z.string().min(1, "Domain name is required"),
+  description: z.string().optional().nullable(),
+  price: z.number().min(1, "Price is required"),
+  category: z.string().min(1, "Category is required"),
+  tags: z
+    .array(z.string(), {
+      required_error: "Tags must be an array of strings",
+    })
+    .optional()
+    .nullable(),
+  status: z.string().min(1, "Status is required"),
+  seller_id: z.string().min(1, "Seller is required"),
+  admin_notes: z.string().optional().nullable(),
+  da_score: z.number().optional().nullable(),
+  pa_score: z.number().optional().nullable(),
+  traffic: z.number().optional().nullable(),
+});

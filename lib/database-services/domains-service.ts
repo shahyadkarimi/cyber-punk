@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabase";
-import type { User } from "@/lib/database-services/users-service"; // Assuming you have a types file
+// Assuming you have a types file
 import type { Database } from "@/lib/database.types";
+import { User } from "@/hooks/use-auth";
 
 export interface Domain {
   id: string;
@@ -23,8 +24,8 @@ export interface Domain {
 }
 
 export interface DomainWithSeller extends Domain {
-  seller: Pick<User, "id" | "username" | "email"> | null;
-  approved_by_user: Pick<User, "id" | "username" | "email"> | null;
+  seller: Pick<User, "_id" | "username" | "email"> | null;
+  approved_by_user: Pick<User, "_id" | "username" | "email"> | null;
 }
 
 export const domainsService = {
@@ -306,16 +307,16 @@ export const domainsService = {
     };
   },
 
-  async getSellers(): Promise<Pick<User, "id" | "username" | "email">[]> {
+  async getSellers(): Promise<Pick<User, "_id" | "username" | "email">[]> {
     const { data, error } = await supabase
       .from("users")
-      .select("id, username, email")
+      .select("_id, username, email")
       .or("role.eq.seller,role.eq.admin");
 
     if (error) {
       console.error("Error fetching sellers:", error);
       throw error;
     }
-    return (data as Pick<User, "id" | "username" | "email">[]) || [];
+    return (data as Pick<User, "_id" | "username" | "email">[]) || [];
   },
 };

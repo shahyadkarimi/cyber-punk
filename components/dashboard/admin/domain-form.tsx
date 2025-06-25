@@ -82,12 +82,14 @@ interface DomainFormProps {
   initialData?: Partial<DomainWithSeller> | null;
   onSubmit: (data: Partial<DomainWithSeller>) => Promise<void>;
   onCancel: () => void;
+  loading: boolean,
 }
 
 export default function DomainForm({
   initialData,
   onSubmit,
   onCancel,
+  loading,
 }: DomainFormProps) {
   const [currentTags, setCurrentTags] = useState<string[]>(
     initialData?.tags || []
@@ -108,7 +110,7 @@ export default function DomainForm({
       description: initialData?.description || null,
       price: initialData?.price || null,
       status: initialData?.status || "pending",
-      seller_id: initialData?.seller_id || "",
+      seller_id: initialData?.seller?._id,
       admin_notes: initialData?.admin_notes || null,
       da_score: initialData?.da_score || null,
       pa_score: initialData?.pa_score || null,
@@ -119,19 +121,8 @@ export default function DomainForm({
   });
 
   useEffect(() => {
-    console.log(initialData);
-    if (initialData) {
-      reset({
-        ...initialData,
-        price: initialData?.price || null,
-        da_score: initialData?.da_score || null,
-        pa_score: initialData?.pa_score || null,
-        traffic: initialData?.traffic || null,
-        seller_id: initialData?.seller_id || "", // Ensure null if undefined
-      });
 
-      setCurrentTags(initialData.tags || []);
-    } else {
+    if (!initialData) {
       reset({
         domain: "",
         description: "",
@@ -162,11 +153,9 @@ export default function DomainForm({
     setCurrentTags(currentTags.filter((tag) => tag !== tagToRemove));
   };
 
-  const submitFormHandler = () => {};
-
   return (
     <form
-      onSubmit={handleSubmit(submitFormHandler)}
+      onSubmit={handleSubmit(onSubmit)}
       className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-2"
     >
       <div>
@@ -421,10 +410,10 @@ export default function DomainForm({
         </Button>
         <Button
           type="submit"
-          disabled={isSubmitting}
+          disabled={loading}
           className="bg-[#00ff9d] text-black hover:bg-[#00cc88]"
         >
-          {isSubmitting
+          {loading
             ? "Saving..."
             : initialData
             ? "Save Changes"
