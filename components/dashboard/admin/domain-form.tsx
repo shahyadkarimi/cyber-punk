@@ -25,6 +25,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { User } from "@/hooks/use-auth";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { domainCategories } from "../domain-submission-form";
 
 const domainSchema = z.object({
   domain: z
@@ -338,6 +339,42 @@ export default function DomainForm({
       </div>
 
       <div>
+        <Label htmlFor="category" className="text-white">
+          Category
+        </Label>
+
+        <Controller
+          name="category"
+          control={control}
+          render={({ field }) => (
+            <Select
+              onValueChange={field.onChange}
+              value={field.value || ""}
+            >
+              <SelectTrigger className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+
+              <SelectContent className="bg-gray-800 border-gray-700">
+                {domainCategories.map((item) => (
+                  <SelectItem
+                    key={item.name}
+                    value={item.name}
+                    className="text-white hover:!bg-gray-700 font-mono"
+                  >
+                    {item.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+        {errors.category && (
+          <p className="text-red-400 text-sm mt-1">{errors.category.message}</p>
+        )}
+      </div>
+
+      {/* <div>
         <Label htmlFor="category" className="text-gray-300">
           Category
         </Label>
@@ -349,7 +386,7 @@ export default function DomainForm({
         {errors.category && (
           <p className="text-red-400 text-sm mt-1">{errors.category.message}</p>
         )}
-      </div>
+      </div> */}
 
       <div>
         <Label htmlFor="tags" className="text-gray-300">

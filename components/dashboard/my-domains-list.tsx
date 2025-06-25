@@ -48,6 +48,7 @@ import { getData, postData } from "@/services/API";
 import { Label } from "../ui/label";
 import { Alert, AlertDescription } from "../ui/alert";
 import { Textarea } from "../ui/textarea";
+import { domainCategories } from "./domain-submission-form";
 
 // This would come from your domains service
 type Domain = {
@@ -60,12 +61,6 @@ type Domain = {
   tags: string[];
   category?: string;
 };
-
-const categories = [
-  { name: "Business", value: "business" },
-  { name: "Technology", value: "technology" },
-  { name: "Etc", value: "etc" },
-];
 
 export default function MyDomainsList() {
   const { user } = useAuth();
@@ -135,13 +130,13 @@ export default function MyDomainsList() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "approved":
-        return <Badge className="bg-green-500">Approved</Badge>;
+        return <Badge className="bg-green-600/15 text-green-600 border border-green-600">Approved</Badge>;
       case "pending":
-        return <Badge className="bg-yellow-500">Pending</Badge>;
+        return <Badge className="bg-yellow-600/15 text-yellow-600 border border-yellow-600">Pending</Badge>;
       case "rejected":
-        return <Badge className="bg-red-500">Rejected</Badge>;
+        return <Badge className="bg-red-600/15 text-red-600 border border-red-600">Rejected</Badge>;
       case "sold":
-        return <Badge className="bg-blue-500">Sold</Badge>;
+        return <Badge className="bg-blue-600/15 text-blue-600 border border-blue-600">Sold</Badge>;
       default:
         return <Badge>{status}</Badge>;
     }
@@ -555,10 +550,10 @@ export default function MyDomainsList() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-700">
-                    {categories.map((item) => (
+                    {domainCategories.map((item) => (
                       <SelectItem
-                        key={item.value}
-                        value={item.value}
+                        key={item.name}
+                        value={item.name}
                         className="text-white hover:!bg-gray-700 font-mono"
                       >
                         {item.name}

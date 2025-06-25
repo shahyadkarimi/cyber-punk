@@ -30,10 +30,13 @@ import {
   SelectValue,
 } from "../ui/select";
 
-const categories = [
-  { name: "Business", value: "business" },
-  { name: "Technology", value: "technology" },
-  { name: "Etc", value: "etc" },
+export const domainCategories = [
+  { name: "Technology" },
+  { name: "Education" },
+  { name: "Business" },
+  { name: "Entertainment" },
+  { name: "Health" },
+  { name: "Finance" },
 ];
 
 export default function DomainSubmissionForm() {
@@ -216,10 +219,10 @@ export default function DomainSubmissionForm() {
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent className="bg-gray-800 border-gray-700">
-                    {categories.map((item) => (
+                    {domainCategories.map((item) => (
                       <SelectItem
-                        key={item.value}
-                        value={item.value}
+                        key={item.name}
+                        value={item.name}
                         className="text-white hover:!bg-gray-700 font-mono"
                       >
                         {item.name}
