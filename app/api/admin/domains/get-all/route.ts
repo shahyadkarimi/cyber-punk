@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       Domains.countDocuments({ status: "rejected", deleted_at: null }),
     ]);
 
-    const formatted = domains.map((item) => ({
+    const formattedDomains = domains.map((item) => ({
       id: item._id,
       domain: item.domain,
       description: item.description,
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       {
-        domains: formatted,
+        domains: formattedDomains,
         stats: { total, pending, approved, rejected, total_revenue: 0 },
       },
       { status: 200 }
