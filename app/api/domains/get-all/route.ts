@@ -1,8 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import connectDB from "@/lib/connectDB";
 import { getAuthUser } from "@/lib/auth";
-import Domains from "@/models/DomainsModel"; // مدل دامین
-import User from "@/models/UsersModel"; // برای جمع‌کردن seller و approved_by_user اگر Populate خواستی
+import Domains from "@/models/DomainsModel";
 
 export async function POST(request: NextRequest) {
   try {

@@ -5,7 +5,7 @@ import "./globals.css";
 import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { AuthProvider } from "@/hooks/use-auth";
-// import { AuthProvider } from "@/lib/auth-context"
+import NextTopLoader from "nextjs-toploader"
 
 // Configure the JetBrains Mono font with the weights we need
 const jetbrainsMono = JetBrains_Mono({
@@ -32,6 +32,8 @@ export default function RootLayout({
       <body
         className={`${jetbrainsMono.className} bg-[#0d0d0f] text-gray-200 min-h-screen flex flex-col`}
       >
+        <NextTopLoader color="#00ff9d" showSpinner={false} />
+
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="matrix-bg absolute inset-0 opacity-10"></div>
         </div>
