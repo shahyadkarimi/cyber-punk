@@ -326,7 +326,7 @@ export function DomainsMarketplace() {
       {/* Results Info */}
       <div className="flex items-center justify-between">
         <p className="text-gray-200">
-          Showing {domains.length} of {totalCount} domains
+          Showing {domains.length} of {domains.length} domains
         </p>
         <div className="flex items-center gap-2">
           {Object.entries(filters).map(([key, value]) => {

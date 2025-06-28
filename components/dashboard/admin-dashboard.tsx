@@ -35,6 +35,8 @@ export default function AdminDashboard() {
   }, []);
 
   const fetchDashboardStats = () => {
+    if (!user) return;
+
     getData("/admin/dashboard/stats")
       .then((res) => {
         setStats({
