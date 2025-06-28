@@ -1,48 +1,76 @@
-import type { Metadata } from "next"
-import { notFound } from "next/navigation"
-import { ShellsService } from "@/lib/database-services/shells-service"
-import ShellDetail from "@/components/shell-detail"
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import ShellDetail from "@/components/shell-detail";
+import { baseURL } from "@/services/API";
 
 interface ShellPageProps {
   params: {
-    id: string
-  }
+    id: string;
+  };
 }
 
-export async function generateMetadata({ params }: ShellPageProps): Promise<Metadata> {
-  const shell = await ShellsService.getShellById(params.id)
+export async function generateMetadata({
+  params,
+}: ShellPageProps): Promise<Metadata> {
+  const fetchData = async () => {
+    try {
+      const webshellRes = await fetch(`${baseURL}/webshells/${params.id}`, {
+        method: "GET",
+        cache: "no-store",
+      });
 
-  if (!shell || !shell.is_active) {
+      return { webshell: await webshellRes.json() };
+    } catch (error) {
+      return { error: "Faild to get webshell information" };
+    }
+  };
+
+  const { webshell, error } = await fetchData();
+
+  if (!webshell || !webshell.is_active) {
     return {
       title: "Shell Not Found | Cyberpunk Web Shell Hub",
       description: "The requested web shell could not be found.",
-    }
+    };
   }
 
   return {
-    title: `${shell.name} | Cyberpunk Web Shell Hub`,
-    description: shell.description.substring(0, 160),
+    title: `${webshell.name} | Cyberpunk Web Shell Hub`,
+    description: webshell.description.substring(0, 160),
     keywords: [
       "web shell",
-      shell.language,
-      shell.category,
-      ...(shell.tags || []),
+      webshell.language,
+      webshell.category,
+      ...(webshell.tags || []),
       "cybersecurity",
       "penetration testing",
     ].join(", "),
-  }
+  };
 }
 
 export default async function ShellPage({ params }: ShellPageProps) {
-  const shell = await ShellsService.getShellById(params.id)
+  const fetchData = async () => {
+    try {
+      const webshellRes = await fetch(`${baseURL}/webshells/${params.id}`, {
+        method: "GET",
+        cache: "no-store",
+      });
 
-  if (!shell || !shell.is_active) {
-    notFound()
+      return { webshell: await webshellRes.json() };
+    } catch (error) {
+      return { error: "Faild to get webshell information" };
+    }
+  };
+
+  const { webshell, error } = await fetchData();
+
+  if (!webshell || !webshell.is_active) {
+    notFound();
   }
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <ShellDetail shell={shell} />
+      <ShellDetail shell={webshell} />
     </main>
-  )
+  );
 }

@@ -26,61 +26,8 @@ import { Progress } from "@/components/ui/progress";
 import { baseURL } from "@/services/API";
 import { getDomainInfo } from "@/helper/helper";
 
-// Mock domain data - replace with actual data fetching
-const domainData = {
-  id: "1",
-  name: "techstartup.com",
-  price: 15000,
-  category: "Technology",
-  description:
-    "Premium domain perfect for tech startups and innovative companies. This domain has excellent SEO potential and brandability.",
-  registrationDate: "2018-03-15",
-  expirationDate: "2025-03-15",
-  registrar: "GoDaddy",
-  status: "approved",
-  featured: true,
-
-  // SEO Metrics
-  da_score: 45,
-  pageAuthority: 38,
-  trustFlow: 25,
-  citationFlow: 30,
-  backlinks: 1250,
-  referringDomains: 180,
-
-  // Traffic Data
-  monthlyTraffic: 8500,
-  trafficGrowth: 15.5,
-  topCountries: ["United States", "Canada", "United Kingdom"],
-  topKeywords: ["tech startup", "innovation", "technology"],
-
-  // Technical Info
-  age: 6,
-  length: 11,
-  extension: ".com",
-  ssl: true,
-  mobile: true,
-  speed: 92,
-
-  // Seller Info
-  seller: {
-    name: "John Smith",
-    rating: 4.8,
-    totalSales: 23,
-    joinDate: "2020-01-15",
-    verified: true,
-    responseTime: "2 hours",
-  },
-
-  // Additional Info
-  tags: ["Premium", "Brandable", "Short", "Tech"],
-  views: 1420,
-  favorites: 89,
-  inquiries: 12,
-};
-
 const Page = async ({ params }: { params: { id: string } }) => {
-  const { id } = params;
+  const { id } = await params;
 
   const fetchData = async () => {
     console.log(id);
@@ -97,7 +44,6 @@ const Page = async ({ params }: { params: { id: string } }) => {
   };
 
   const { domain, error } = await fetchData();
-  console.log(domain);
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {

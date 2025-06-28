@@ -1,136 +1,94 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { ChevronLeft, Download, Copy, Check, FileCode, Calendar, User, Tag, ExternalLink } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { WebShell } from "@/lib/database-services/shells-service"
+import { useState } from "react";
+import Link from "next/link";
+import {
+  ChevronLeft,
+  Download,
+  Copy,
+  Check,
+  FileCode,
+  Calendar,
+  User,
+  Tag,
+  ExternalLink,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import type { WebShell } from "@/lib/database-services/shells-service";
+import { getData } from "@/services/API";
 
 interface ShellDetailProps {
-  shell: WebShell
+  shell: WebShell;
 }
 
 export default function ShellDetail({ shell }: ShellDetailProps) {
-  const [copied, setCopied] = useState(false)
-  const [downloading, setDownloading] = useState(false)
+  const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(shell.file_path)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+    navigator.clipboard.writeText(shell.file_path);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const downloadFile = async () => {
-    try {
-      setDownloading(true)
+    setDownloading(true);
 
-      // Extract filename from GitHub URL
-      const urlParts = shell.file_path.split("/")
-      const filename =
-        urlParts[urlParts.length - 1] || `${shell.name.replace(/\s+/g, "_")}.${getFileExtension(shell.language)}`
+    window.open(
+      `/api/webshells/download/${shell.id}`,
+      "_blank",
+      "noopener,noreferrer"
+    );
 
-      // Fetch the file from GitHub
-      const response = await fetch(shell.file_path)
-      if (!response.ok) {
-        throw new Error(`Failed to download file: ${response.statusText}`)
-      }
-
-      const blob = await response.blob()
-
-      // Create download link
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement("a")
-      a.href = url
-      a.download = filename
-      document.body.appendChild(a)
-      a.click()
-
-      // Cleanup
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
-
-      // Update download count (optional - you can implement this server action)
-      // await updateDownloadCount(shell.id)
-    } catch (error) {
-      console.error("Download failed:", error)
-      alert("Failed to download file. Please try again or use the direct link.")
-    } finally {
-      setDownloading(false)
-    }
-  }
-
-  const getFileExtension = (language: string): string => {
-    switch (language.toLowerCase()) {
-      case "php":
-        return "php"
-      case "asp":
-      case "aspx":
-        return "asp"
-      case "jsp":
-        return "jsp"
-      case "python":
-        return "py"
-      case "perl":
-        return "pl"
-      case "javascript":
-        return "js"
-      default:
-        return "txt"
-    }
-  }
+    setTimeout(() => {
+      setDownloading(false);
+    }, 1500);
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric",
-    })
-  }
-
-  const formatFileSize = (bytes?: number) => {
-    if (!bytes) return "Unknown size"
-
-    const units = ["B", "KB", "MB", "GB"]
-    let size = bytes
-    let unitIndex = 0
-
-    while (size >= 1024 && unitIndex < units.length - 1) {
-      size /= 1024
-      unitIndex++
-    }
-
-    return `${size.toFixed(1)} ${units[unitIndex]}`
-  }
+    });
+  };
 
   const isGitHubLink = (url: string) => {
-    return url.includes("github.com") || url.includes("raw.githubusercontent.com")
-  }
+    return (
+      url.includes("github.com") || url.includes("raw.githubusercontent.com")
+    );
+  };
 
   const getGitHubRepoInfo = (url: string) => {
     try {
-      const match = url.match(/github\.com\/([^/]+)\/([^/]+)/)
+      const match = url.match(/github\.com\/([^/]+)\/([^/]+)/);
       if (match) {
         return {
           owner: match[1],
           repo: match[2],
           repoUrl: `https://github.com/${match[1]}/${match[2]}`,
-        }
+        };
       }
     } catch (error) {
-      console.error("Error parsing GitHub URL:", error)
+      console.error("Error parsing GitHub URL:", error);
     }
-    return null
-  }
+    return null;
+  };
 
-  const repoInfo = isGitHubLink(shell.file_path) ? getGitHubRepoInfo(shell.file_path) : null
+  const repoInfo = isGitHubLink(shell.file_path)
+    ? getGitHubRepoInfo(shell.file_path)
+    : null;
 
   return (
     <div className="space-y-6">
       {/* Breadcrumb */}
       <div>
-        <Link href="/shells" className="inline-flex items-center text-gray-400 hover:text-[#00ff9d] transition-colors">
+        <Link
+          href="/shells"
+          className="inline-flex items-center text-gray-400 hover:text-[#00ff9d] transition-colors"
+        >
           <ChevronLeft className="h-4 w-4 mr-1" />
           Back to Shells
         </Link>
@@ -144,13 +102,18 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
               <FileCode className={`h-8 w-8 ${getTypeColor(shell.language)}`} />
             </div>
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-white">{shell.name}</h1>
-              <p className="text-gray-400 flex items-center mt-1">
-                <Badge variant="outline" className="mr-2 bg-[#2a2a3a] border-none">
+              <h1 className="text-2xl md:text-3xl font-bold text-white">
+                {shell.name}
+              </h1>
+              <div className="text-gray-400 flex items-center mt-1">
+                <Badge
+                  variant="outline"
+                  className="mr-2 bg-[#2a2a3a] border-none"
+                >
                   {shell.language.toUpperCase()}
                 </Badge>
                 <span className="text-sm">{shell.category}</span>
-              </p>
+              </div>
               {repoInfo && (
                 <p className="text-gray-500 text-sm mt-1 flex items-center">
                   <ExternalLink className="h-3 w-3 mr-1" />
@@ -173,7 +136,11 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
               variant="outline"
               className="border-[#2a2a3a] hover:bg-[#2a2a3a] hover:text-[#00ff9d]"
             >
-              {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+              {copied ? (
+                <Check className="mr-2 h-4 w-4" />
+              ) : (
+                <Copy className="mr-2 h-4 w-4" />
+              )}
               {copied ? "Copied" : "Copy Link"}
             </Button>
 
@@ -196,8 +163,16 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
             </Button>
 
             {isGitHubLink(shell.file_path) && (
-              <Button asChild variant="outline" className="border-[#2a2a3a] hover:bg-[#2a2a3a] hover:text-[#00ff9d]">
-                <a href={shell.file_path} target="_blank" rel="noopener noreferrer">
+              <Button
+                asChild
+                variant="outline"
+                className="border-[#2a2a3a] hover:bg-[#2a2a3a] hover:text-[#00ff9d]"
+              >
+                <a
+                  href={shell.file_path}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   <ExternalLink className="mr-2 h-4 w-4" />
                   View Source
                 </a>
@@ -214,21 +189,33 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
           <div className="bg-[#1a1a1a] border border-[#2a2a3a] rounded-lg overflow-hidden">
             <Tabs defaultValue="details">
               <TabsList className="bg-[#2a2a3a] w-full border-b border-[#3a3a4a]">
-                <TabsTrigger value="details" className="data-[state=active]:bg-[#1a1a1a]">
+                <TabsTrigger
+                  value="details"
+                  className="data-[state=active]:bg-[#1a1a1a]"
+                >
                   Details
                 </TabsTrigger>
-                <TabsTrigger value="usage" className="data-[state=active]:bg-[#1a1a1a]">
+                <TabsTrigger
+                  value="usage"
+                  className="data-[state=active]:bg-[#1a1a1a]"
+                >
                   Usage
                 </TabsTrigger>
-                <TabsTrigger value="security" className="data-[state=active]:bg-[#1a1a1a]">
+                <TabsTrigger
+                  value="security"
+                  className="data-[state=active]:bg-[#1a1a1a]"
+                >
                   Security
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="details" className="p-6">
-                <h2 className="text-xl font-bold text-[#00ff9d] mb-4">Description</h2>
+                <h2 className="text-xl font-bold text-[#00ff9d] mb-4">
+                  Description
+                </h2>
                 <p className="text-gray-300 whitespace-pre-line">
-                  {shell.description || "No description provided for this shell."}
+                  {shell.description ||
+                    "No description provided for this shell."}
                 </p>
 
                 {shell.tags && shell.tags.length > 0 && (
@@ -239,7 +226,11 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {shell.tags.map((tag, index) => (
-                        <Badge key={index} variant="outline" className="bg-[#2a2a3a] border-none">
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="bg-[#2a2a3a] border-none"
+                        >
                           {tag}
                         </Badge>
                       ))}
@@ -254,7 +245,9 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
                       Source
                     </h3>
                     <div className="bg-[#2a2a3a] p-4 rounded-md">
-                      <p className="text-gray-300 text-sm mb-2">GitHub Repository:</p>
+                      <p className="text-gray-300 text-sm mb-2">
+                        GitHub Repository:
+                      </p>
                       <a
                         href={shell.file_path}
                         target="_blank"
@@ -269,40 +262,58 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
               </TabsContent>
 
               <TabsContent value="usage" className="p-6">
-                <h2 className="text-xl font-bold text-[#00ff9d] mb-4">Usage Instructions</h2>
+                <h2 className="text-xl font-bold text-[#00ff9d] mb-4">
+                  Usage Instructions
+                </h2>
                 <div className="space-y-4">
                   <p className="text-gray-300">
-                    This web shell can be used for remote system administration and penetration testing. Follow these
-                    steps to use it:
+                    This web shell can be used for remote system administration
+                    and penetration testing. Follow these steps to use it:
                   </p>
 
                   <ol className="list-decimal list-inside space-y-2 text-gray-300">
-                    <li>Download the shell file using the download button above</li>
-                    <li>Upload it to the target server via FTP, file manager, or other means</li>
-                    <li>Access the shell through a web browser by navigating to its URL</li>
+                    <li>
+                      Download the shell file using the download button above
+                    </li>
+                    <li>
+                      Upload it to the target server via FTP, file manager, or
+                      other means
+                    </li>
+                    <li>
+                      Access the shell through a web browser by navigating to
+                      its URL
+                    </li>
                     <li>Use the provided interface to execute commands</li>
                   </ol>
 
                   <div className="bg-[#2a2a3a] p-4 rounded-md mt-4">
                     <p className="text-amber-400 text-sm">
-                      ⚠️ Warning: Only use this tool on systems you have permission to access. Unauthorized use is
-                      illegal.
+                      ⚠️ Warning: Only use this tool on systems you have
+                      permission to access. Unauthorized use is illegal.
                     </p>
                   </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="security" className="p-6">
-                <h2 className="text-xl font-bold text-[#00ff9d] mb-4">Security Considerations</h2>
+                <h2 className="text-xl font-bold text-[#00ff9d] mb-4">
+                  Security Considerations
+                </h2>
                 <div className="space-y-4">
                   <p className="text-gray-300">
-                    Web shells are powerful tools that can be used for both legitimate system administration and
-                    malicious purposes. Be aware of the following security considerations:
+                    Web shells are powerful tools that can be used for both
+                    legitimate system administration and malicious purposes. Be
+                    aware of the following security considerations:
                   </p>
 
                   <ul className="list-disc list-inside space-y-2 text-gray-300">
-                    <li>Always protect access to your web shell with strong authentication</li>
-                    <li>Use encryption when possible to protect transmitted data</li>
+                    <li>
+                      Always protect access to your web shell with strong
+                      authentication
+                    </li>
+                    <li>
+                      Use encryption when possible to protect transmitted data
+                    </li>
                     <li>Remove the shell when it's no longer needed</li>
                     <li>Monitor access logs for unauthorized usage</li>
                     <li>Consider using IP restrictions to limit access</li>
@@ -310,8 +321,9 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
 
                   <div className="bg-[#2a2a3a] p-4 rounded-md mt-4">
                     <p className="text-gray-300 text-sm">
-                      This tool is provided for educational purposes and legitimate security testing only. The authors
-                      are not responsible for any misuse or damage caused by this tool.
+                      This tool is provided for educational purposes and
+                      legitimate security testing only. The authors are not
+                      responsible for any misuse or damage caused by this tool.
                     </p>
                   </div>
                 </div>
@@ -342,20 +354,17 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
                 <p className="text-white">{formatDate(shell.updated_at)}</p>
               </div>
 
-              {shell.user && (
+              {shell.uploader && (
                 <div>
                   <h3 className="text-sm text-gray-400 mb-1 flex items-center">
                     <User className="h-4 w-4 mr-2" />
                     Author
                   </h3>
-                  <p className="text-white">{shell.user.username || shell.user.email}</p>
+                  <p className="text-white">
+                    {shell?.uploader?.username || shell?.uploader?.email}
+                  </p>
                 </div>
               )}
-
-              <div>
-                <h3 className="text-sm text-gray-400 mb-1">File Size</h3>
-                <p className="text-white">{formatFileSize(shell.file_size)}</p>
-              </div>
 
               <div>
                 <h3 className="text-sm text-gray-400 mb-1">Downloads</h3>
@@ -396,7 +405,11 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
                   variant="outline"
                   className="w-full border-[#2a2a3a] hover:bg-[#2a2a3a] hover:text-[#00ff9d]"
                 >
-                  <a href={shell.file_path} target="_blank" rel="noopener noreferrer">
+                  <a
+                    href={shell.file_path}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <ExternalLink className="mr-2 h-4 w-4" />
                     View on GitHub
                   </a>
@@ -408,7 +421,11 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
                 variant="outline"
                 className="w-full border-[#2a2a3a] hover:bg-[#2a2a3a] hover:text-[#00ff9d]"
               >
-                {copied ? <Check className="mr-2 h-4 w-4" /> : <Copy className="mr-2 h-4 w-4" />}
+                {copied ? (
+                  <Check className="mr-2 h-4 w-4" />
+                ) : (
+                  <Copy className="mr-2 h-4 w-4" />
+                )}
                 {copied ? "Copied!" : "Copy Link"}
               </Button>
             </div>
@@ -417,31 +434,32 @@ export default function ShellDetail({ shell }: ShellDetailProps) {
           <div className="bg-[#1a1a1a] border border-[#2a2a3a] rounded-lg p-6">
             <h2 className="text-lg font-bold text-white mb-4">Disclaimer</h2>
             <p className="text-gray-400 text-sm">
-              This web shell is provided for educational and professional security testing purposes only. Using this
-              tool against systems without explicit permission is illegal and unethical. Always practice responsible
-              security testing.
+              This web shell is provided for educational and professional
+              security testing purposes only. Using this tool against systems
+              without explicit permission is illegal and unethical. Always
+              practice responsible security testing.
             </p>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function getTypeColor(type: string): string {
   switch (type.toLowerCase()) {
     case "php":
-      return "text-purple-400"
+      return "text-purple-400";
     case "aspx":
     case "asp":
-      return "text-blue-400"
+      return "text-blue-400";
     case "jsp":
-      return "text-red-400"
+      return "text-red-400";
     case "python":
-      return "text-green-400"
+      return "text-green-400";
     case "perl":
-      return "text-yellow-400"
+      return "text-yellow-400";
     default:
-      return "text-gray-400"
+      return "text-gray-400";
   }
 }
