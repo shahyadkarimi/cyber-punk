@@ -42,7 +42,6 @@ export async function POST(request: NextRequest) {
 
     const userDomain = await Domains.findById(id);
 
-    // if domain exist
     const existingDomain = await Domains.findOne({
       domain: userDomain.domain,
       _id: { $ne: id },

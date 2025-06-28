@@ -166,7 +166,7 @@ export default function DomainForm({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 py-4 max-h-[70vh] overflow-y-auto pr-2"
+      className="space-y-6 py-4 max-h-[80vh] overflow-y-auto pr-2"
     >
       {error && (
         <Alert className="border-red-500/50 bg-red-500/10 mb-2">
@@ -355,7 +355,7 @@ export default function DomainForm({
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
 
-              <SelectContent className="bg-gray-800 border-gray-700">
+              <SelectContent className="bg-[#0d0d0d] border-[#2a2a3a] text-white">
                 {domainCategories.map((item) => (
                   <SelectItem
                     key={item.name}

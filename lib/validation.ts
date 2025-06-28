@@ -97,3 +97,13 @@ export const editDomainAdmin = z.object({
   pa_score: z.number().optional().nullable(),
   traffic: z.number().optional().nullable(),
 });
+
+export const createWebShellSchema = z.object({
+  name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  file_path: z.string().min(1, "File path is required"),
+  language: z.string().min(1, "Language is required"),
+  category: z.string().min(1, "Category is required"),
+  tags: z.array(z.string()).optional(),
+  is_active: z.boolean().optional(),
+});

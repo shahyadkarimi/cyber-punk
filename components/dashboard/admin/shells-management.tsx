@@ -1,150 +1,173 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useAuth } from "@/hooks/use-auth"
-import { ShellsService, type WebShell } from "@/lib/database-services/shells-service"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Badge } from "@/components/ui/badge"
-import { Search, Plus, Edit, Trash2, Code } from "lucide-react"
-import ShellForm from "./shell-form"
+import { useState, useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import {
+  ShellsService,
+  type WebShell,
+} from "@/lib/database-services/shells-service";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Search, Plus, Edit, Trash2, Code } from "lucide-react";
+import ShellForm from "./shell-form";
+import { toast } from "@/hooks/use-toast";
+import { postData } from "@/services/API";
+
+export const shellLanguages = [
+  "PHP",
+  "Python",
+  "Perl",
+  "ASP",
+  "ASPX",
+  "JSP",
+  "Node.js",
+  "Ruby",
+  "Bash",
+  "PowerShell",
+  "C",
+  "C++",
+];
+
+export const shellCategories = [
+  "Backdoor",
+  "File Manager",
+  "Reverse Shell",
+  "Web Console",
+  "Minimal Shell",
+  "Obfuscated",
+  "Uploader",
+  "Multi-Function",
+  "Bypass (WAF/AV)",
+  "Password Protected",
+  "Bind Shell",
+  "TTY Spawn",
+];
 
 export default function ShellsManagement() {
-  const { user } = useAuth()
-  const [shells, setShells] = useState<WebShell[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [filteredShells, setFilteredShells] = useState<WebShell[]>([])
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  const [currentShell, setCurrentShell] = useState<WebShell | null>(null)
-  const [formMode, setFormMode] = useState<"create" | "edit">("create")
-  const [submitting, setSubmitting] = useState(false)
+  const { user } = useAuth();
+  const [shells, setShells] = useState<WebShell[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredShells, setFilteredShells] = useState<WebShell[]>([]);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [currentShell, setCurrentShell] = useState<WebShell | null>(null);
+  const [formMode, setFormMode] = useState<"create" | "edit">("create");
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [error, setError] = useState<string>("");
 
   useEffect(() => {
-    fetchShells()
-  }, [])
+    fetchShells();
+  }, []);
 
-  useEffect(() => {
-    if (searchQuery.trim() === "") {
-      setFilteredShells(shells)
-    } else {
-      const query = searchQuery.toLowerCase()
-      const filtered = shells.filter(
-        (shell) =>
-          shell.name.toLowerCase().includes(query) ||
-          (shell.description && shell.description.toLowerCase().includes(query)) ||
-          shell.language.toLowerCase().includes(query) ||
-          shell.category.toLowerCase().includes(query) ||
-          (shell.tags && shell.tags.some((tag) => tag.toLowerCase().includes(query))),
-      )
-      setFilteredShells(filtered)
-    }
-  }, [searchQuery, shells])
+  const fetchShells = async (search?: string) => {
+    setLoading(true);
 
-  const fetchShells = async () => {
-    setLoading(true)
-    try {
-      console.log("Fetching shells for admin panel...")
-      const data = await ShellsService.getAllShells()
-      console.log("Fetched shells:", data)
-      setShells(data)
-      setFilteredShells(data)
-    } catch (error) {
-      console.error("Error fetching shells:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+    postData("/admin/webshell/get-all", { search })
+      .then((res) => {
+        setShells(res.data.shells);
+        setFilteredShells(res.data.shells);
+        setLoading(false);
+      })
+      .catch((err) => {
+        setLoading(false);
+        toast({
+          title: err?.response?.data?.error,
+          description: err.message,
+          variant: "destructive",
+        });
+      });
+  };
 
-  const handleCreateShell = () => {
-    setCurrentShell(null)
-    setFormMode("create")
-    setIsFormOpen(true)
-  }
+  const openCreateShellModal = () => {
+    setCurrentShell(null);
+    setFormMode("create");
+    setIsFormOpen(true);
+  };
 
-  const handleEditShell = (shell: WebShell) => {
-    setCurrentShell(shell)
-    setFormMode("edit")
-    setIsFormOpen(true)
-  }
+  const openEditShellModal = (shell: WebShell) => {
+    setCurrentShell(shell);
+    setFormMode("edit");
+    setIsFormOpen(true);
+  };
 
   const handleDeleteClick = (shell: WebShell) => {
-    setCurrentShell(shell)
-    setIsDeleteDialogOpen(true)
-  }
+    setCurrentShell(shell);
+    setIsDeleteDialogOpen(true);
+  };
 
-  const handleDeleteConfirm = async () => {
-    if (!currentShell) return
-
-    try {
-      console.log("Deleting shell:", currentShell.id)
-      await ShellsService.deleteShell(currentShell.id)
-      setShells(shells.filter((shell) => shell.id !== currentShell.id))
-      setIsDeleteDialogOpen(false)
-      setCurrentShell(null)
-    } catch (error) {
-      console.error("Error deleting shell:", error)
-      alert("Failed to delete shell. Please try again.")
-    }
-  }
-
-  const handleFormSubmit = async (formData: any) => {
-    if (!user?.id) {
-      console.error("No user ID available")
-      alert("You must be logged in to create shells")
-      return
+  const AddEditShellHandler = async (formData: any) => {
+    if (!user?._id) {
+      return null;
     }
 
-    setSubmitting(true)
-    try {
-      console.log("Submitting shell form:", formData)
+    setSubmitLoading(true);
 
-      if (formMode === "create") {
-        console.log("Creating new shell with user ID:", user.id)
-        const newShell = await ShellsService.createShell(formData, user.id)
-        console.log("Shell created successfully:", newShell)
-
-        // Refresh the list
-        await fetchShells()
-
-        setIsFormOpen(false)
-        setCurrentShell(null)
-      } else if (formMode === "edit" && currentShell) {
-        console.log("Updating shell:", currentShell.id)
-        const updatedShell = await ShellsService.updateShell(currentShell.id, formData)
-        console.log("Shell updated successfully:", updatedShell)
-
-        // Refresh the list
-        await fetchShells()
-
-        setIsFormOpen(false)
-        setCurrentShell(null)
-      }
-    } catch (error) {
-      console.error("Error submitting form:", error)
-      alert(`Failed to ${formMode} shell. Please check the console for details.`)
-    } finally {
-      setSubmitting(false)
+    if (formMode === "create") {
+      postData("/admin/webshell/create", { ...formData })
+        .then(async (res) => {
+          await fetchShells();
+          setSubmitLoading(false);
+          setIsFormOpen(false);
+        })
+        .catch((err) => {
+          setSubmitLoading(false);
+          setError(err?.response?.data?.error || "Faild to create webshell");
+        });
+    } else {
+      postData("/admin/webshell/edit", { id: currentShell?.id, ...formData })
+        .then(async (res) => {
+          await fetchShells();
+          setSubmitLoading(false);
+          setIsFormOpen(false);
+        })
+        .catch((err) => {
+          setSubmitLoading(false);
+          setError(err?.response?.data?.error || "Faild to edit webshell");
+        });
     }
-  }
+  };
+
+  const deleteShellHandler = async () => {
+    if (!currentShell) return;
+
+    setSubmitLoading(true);
+
+    postData("/admin/webshell/delete", { id: currentShell?.id })
+      .then(async (res) => {
+        await fetchShells();
+        setSubmitLoading(false);
+        setIsDeleteDialogOpen(false);
+        setCurrentShell(null);
+      })
+      .catch((err) => {
+        setSubmitLoading(false);
+        setError(err?.response?.data?.error || "Faild to edit webshell");
+      });
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
       day: "numeric",
-    })
-  }
-
-  const formatFileSize = (size?: number | null) => {
-    if (!size) return "Unknown"
-    if (size < 1024) return `${size} B`
-    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`
-    return `${(size / (1024 * 1024)).toFixed(1)} MB`
-  }
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -155,10 +178,21 @@ export default function ShellsManagement() {
             placeholder="Search shells..."
             className="pl-8 bg-[#1a1a1a] border-[#2a2a3a]"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+
+              if (e.target.value.length) {
+                fetchShells(e.target.value);
+              } else {
+                fetchShells();
+              }
+            }}
           />
         </div>
-        <Button onClick={handleCreateShell} className="bg-[#00ff9d] hover:bg-[#00cc7d] text-black">
+        <Button
+          onClick={openCreateShellModal}
+          className="bg-[#00ff9d] hover:bg-[#00cc7d] text-black"
+        >
           <Plus className="mr-2 h-4 w-4" /> Add Shell
         </Button>
       </div>
@@ -172,9 +206,13 @@ export default function ShellsManagement() {
         ) : filteredShells.length === 0 ? (
           <div className="text-center p-8">
             <Code className="mx-auto h-12 w-12 text-gray-500 mb-2" />
-            <h3 className="text-lg font-medium text-gray-300">No shells found</h3>
+            <h3 className="text-lg font-medium text-gray-300">
+              No shells found
+            </h3>
             <p className="text-gray-500 mt-1">
-              {searchQuery ? "Try adjusting your search query" : "Start by adding a new web shell"}
+              {searchQuery
+                ? "Try adjusting your search query"
+                : "Start by adding a new web shell"}
             </p>
           </div>
         ) : (
@@ -185,7 +223,6 @@ export default function ShellsManagement() {
                   <TableHead className="text-[#00ff9d]">Name</TableHead>
                   <TableHead className="text-[#00ff9d]">Language</TableHead>
                   <TableHead className="text-[#00ff9d]">Category</TableHead>
-                  <TableHead className="text-[#00ff9d]">Size</TableHead>
                   <TableHead className="text-[#00ff9d]">Status</TableHead>
                   <TableHead className="text-[#00ff9d]">Downloads</TableHead>
                   <TableHead className="text-[#00ff9d]">Created</TableHead>
@@ -194,20 +231,32 @@ export default function ShellsManagement() {
               </TableHeader>
               <TableBody>
                 {filteredShells.map((shell) => (
-                  <TableRow key={shell.id} className="border-b border-[#2a2a3a] hover:bg-[#2a2a3a]/50">
-                    <TableCell className="font-medium text-white">{shell.name}</TableCell>
+                  <TableRow
+                    key={shell.id}
+                    className="border-b border-[#2a2a3a] hover:bg-[#2a2a3a]/50"
+                  >
+                    <TableCell className="font-medium text-white">
+                      {shell.name}
+                    </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="bg-[#2a2a3a] text-white border-none">
+                      <Badge
+                        variant="outline"
+                        className="bg-[#2a2a3a] text-white border-none"
+                      >
                         {shell.language}
                       </Badge>
                     </TableCell>
                     <TableCell>{shell.category}</TableCell>
-                    <TableCell>{formatFileSize(shell.file_size)}</TableCell>
                     <TableCell>
                       {shell.is_active ? (
-                        <Badge className="bg-green-600 hover:bg-green-700">Active</Badge>
+                        <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
+                          Active
+                        </Badge>
                       ) : (
-                        <Badge variant="outline" className="text-gray-400 border-gray-600">
+                        <Badge
+                          variant="outline"
+                          className="bg-red-500/20 text-red-400 border-red-500/30"
+                        >
                           Inactive
                         </Badge>
                       )}
@@ -219,15 +268,15 @@ export default function ShellsManagement() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8 border-[#2a2a3a] hover:bg-[#2a2a3a] hover:text-[#00ff9d]"
-                          onClick={() => handleEditShell(shell)}
+                          className="h-8 border-[#2a2a3a] text-neon-green hover:bg-neon-green/15 hover:text-neon-green"
+                          onClick={() => openEditShellModal(shell)}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-8 border-[#2a2a3a] hover:bg-red-900/30 hover:text-red-500"
+                          className="h-8 border-[#2a2a3a] text-red-500 hover:bg-red-900/15 hover:text-red-500"
                           onClick={() => handleDeleteClick(shell)}
                         >
                           <Trash2 className="h-4 w-4" />
@@ -250,11 +299,13 @@ export default function ShellsManagement() {
               {formMode === "create" ? "Add New Web Shell" : "Edit Web Shell"}
             </DialogTitle>
           </DialogHeader>
+
           <ShellForm
             initialData={currentShell}
-            onSubmit={handleFormSubmit}
+            onSubmit={AddEditShellHandler}
             onCancel={() => setIsFormOpen(false)}
-            isSubmitting={submitting}
+            isSubmitting={submitLoading}
+            error={error}
           />
         </DialogContent>
       </Dialog>
@@ -263,28 +314,34 @@ export default function ShellsManagement() {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent className="bg-[#1a1a1a] border-[#2a2a3a] text-white">
           <DialogHeader>
-            <DialogTitle className="text-red-500 text-xl">Confirm Deletion</DialogTitle>
+            <DialogTitle className="text-red-500 text-xl">
+              Confirm Deletion
+            </DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <p>
-              Are you sure you want to delete the shell <span className="font-bold">{currentShell?.name}</span>?
+              Are you sure you want to delete the shell{" "}
+              <span className="font-bold">{currentShell?.name}</span>?
             </p>
             <p className="text-gray-400 mt-2">This action cannot be undone.</p>
           </div>
           <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button
               variant="destructive"
               className="bg-red-600 hover:bg-red-700 text-white"
-              onClick={handleDeleteConfirm}
+              onClick={deleteShellHandler}
             >
-              Delete
+              {submitLoading ? "Deleting..." : "Delete"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }

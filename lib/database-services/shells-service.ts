@@ -23,10 +23,10 @@ export interface WebShell {
 export interface ShellFormData {
   name: string
   description?: string
+  language?: string
+  category?: string
   file_path: string
   file_size?: number
-  language: string
-  category: string
   tags?: string[]
   is_active: boolean
 }
