@@ -3,7 +3,7 @@
  */
 export async function findDomainsByIp(url: string): Promise<string[]> {
   try {
-    const response = await fetch("/api/domains", {
+    const response = await fetch("/api/domain-finder/sub-domains", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -46,7 +46,7 @@ export async function findDomainsByIp(url: string): Promise<string[]> {
  */
 export async function findSubdomains(domain: string): Promise<string[]> {
   try {
-    const response = await fetch("/api/domains", {
+    const response = await fetch("/api/domain-finder/sub-domains", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -89,7 +89,7 @@ export async function findSubdomains(domain: string): Promise<string[]> {
  */
 export async function checkCMS(url: string): Promise<{ cms: string; confidence: number; vulnerabilities?: string[] }> {
   try {
-    const response = await fetch("/api/domains", {
+    const response = await fetch("/api/domain-finder/sub-domains", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -137,7 +137,7 @@ export async function checkCMS(url: string): Promise<{ cms: string; confidence: 
  */
 export async function verifyCaptcha(captchaId: string, captchaAnswer: string): Promise<boolean> {
   try {
-    const response = await fetch("/api/domains", {
+    const response = await fetch("/api/domain-finder/sub-domains", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -166,7 +166,7 @@ export async function verifyCaptcha(captchaId: string, captchaAnswer: string): P
  */
 export async function getCaptcha(): Promise<{ id: string; question: string; expiresAt: number } | null> {
   try {
-    const response = await fetch("/api/domains", {
+    const response = await fetch("/api/domain-finder/sub-domains", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

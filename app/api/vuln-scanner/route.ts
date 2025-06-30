@@ -12,9 +12,9 @@ export async function POST(request: Request) {
   try {
     // Get client IP for rate limiting
     const headersList = headers()
-    const forwardedFor = headersList.get("x-forwarded-for")
+    const forwardedFor = (await headersList).get("x-forwarded-for")
     const clientIp = forwardedFor ? forwardedFor.split(",")[0] : "unknown"
-    const userAgent = headersList.get("user-agent") || "unknown"
+    const userAgent = (await headersList).get("user-agent") || "unknown"
 
     const { url, selectedCms, captchaId, captchaAnswer } = await request.json()
 

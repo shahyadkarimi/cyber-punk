@@ -1,53 +1,70 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Shield, RefreshCw } from "lucide-react"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Shield, RefreshCw } from "lucide-react";
+import { postData } from "@/services/API";
 
 interface CaptchaProps {
-  captchaId: string
-  question: string
-  onVerify: (id: string, answer: string) => Promise<boolean>
-  onSuccess: () => void
+  captchaId: string;
+  question: string;
+  onSuccess: () => void;
+  onCancel: () => void;
 }
 
-export default function CaptchaChallenge({ captchaId, question, onVerify, onSuccess }: CaptchaProps) {
-  const [answer, setAnswer] = useState("")
-  const [isVerifying, setIsVerifying] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [attempts, setAttempts] = useState(0)
+export default function CaptchaChallenge({
+  captchaId,
+  question,
+  onSuccess,
+  onCancel,
+}: CaptchaProps) {
+  const [answer, setAnswer] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [attempts, setAttempts] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!answer.trim()) {
-      setError("Please enter an answer")
-      return
+      setError("Please enter an answer");
+      return;
     }
 
-    setIsVerifying(true)
-    setError(null)
+    setIsVerifying(true);
 
-    try {
-      const success = await onVerify(captchaId, answer)
-
-      if (success) {
-        onSuccess()
-      } else {
-        setError("Incorrect answer. Please try again.")
-        setAttempts((prev) => prev + 1)
-        setAnswer("")
-      }
-    } catch (error) {
-      setError("Verification failed. Please try again.")
-    } finally {
-      setIsVerifying(false)
-    }
-  }
+    postData("/captcha/verify", {
+      captchaId,
+      answer,
+    })
+      .then((res) => {
+        if (res.data.success) {
+          onSuccess();
+          setIsVerifying(false);
+        } else {
+          setError("Incorrect answer. Please try again.");
+          setAttempts((prev) => prev + 1);
+          setAnswer("");
+        }
+      })
+      .catch((err) => {
+        setError(
+          err?.response?.data?.error || "Verification failed. Please try again."
+        );
+        setIsVerifying(false);
+      });
+  };
 
   return (
     <Card className="bg-[#0f0f13] border-[#2a2a3a] max-w-md mx-auto">
@@ -65,7 +82,9 @@ export default function CaptchaChallenge({ captchaId, question, onVerify, onSucc
         <form onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div className="p-4 bg-[#1a1a1a] border border-[#2a2a3a] rounded-md">
-              <p className="font-mono text-gray-200 text-center text-lg">{question}</p>
+              <p className="font-mono text-gray-200 text-center text-lg">
+                {question}
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -78,23 +97,28 @@ export default function CaptchaChallenge({ captchaId, question, onVerify, onSucc
                 autoComplete="off"
               />
 
-              {error && <p className="text-red-400 font-mono text-sm">{error}</p>}
+              {error && (
+                <p className="text-red-400 font-mono text-sm">{error}</p>
+              )}
 
-              {attempts > 2 && <p className="text-amber-400 font-mono text-sm">Hint: The answer is a simple number</p>}
+              {attempts > 2 && (
+                <p className="text-amber-400 font-mono text-sm">
+                  Hint: The answer is a simple number
+                </p>
+              )}
             </div>
           </div>
         </form>
       </CardContent>
 
-      <CardFooter className="flex flex-col sm:flex-row gap-3 px-4 sm:px-6">
+      <CardFooter className="flex flex-col sm:flex-row justify-center gap-3 px-4 sm:px-6">
         <Button
           type="button"
           variant="outline"
           className="font-mono border-[#2a2a3a] text-gray-300 hover:bg-[#2a2a3a] hover:text-white w-full sm:w-auto h-12"
-          onClick={() => window.location.reload()}
+          onClick={onCancel}
         >
-          <RefreshCw className="mr-2 h-4 w-4" />
-          New Challenge
+          Cancel
         </Button>
 
         <Button
@@ -107,5 +131,5 @@ export default function CaptchaChallenge({ captchaId, question, onVerify, onSucc
         </Button>
       </CardFooter>
     </Card>
-  )
+  );
 }
