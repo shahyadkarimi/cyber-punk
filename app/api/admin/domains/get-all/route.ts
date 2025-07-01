@@ -1,8 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import connectDB from "@/lib/connectDB";
 import { getAuthUser } from "@/lib/auth";
-import Domains from "@/models/DomainsModel"; // مدل دامین
-import User from "@/models/UsersModel"; // برای جمع‌کردن seller و approved_by_user اگر Populate خواستی
+import Domains from "@/models/DomainsModel";
+import User from "@/models/UsersModel";
 
 export async function POST(request: NextRequest) {
   try {
@@ -69,6 +69,8 @@ export async function POST(request: NextRequest) {
       pa_score: item.pa_score,
       traffic: item.traffic,
       category: item.category,
+      premium: item.premium,
+      country: item.country,
       tags: item.tags,
       approved_at: item.approved_at,
       approved_by: item.approved_by,

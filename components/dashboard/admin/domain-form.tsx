@@ -78,8 +78,6 @@ const domainSchema = z.object({
   tags: z.array(z.string()).optional(),
 });
 
-type DomainFormData = z.infer<typeof domainSchema>;
-
 interface DomainFormProps {
   initialData?: Partial<DomainWithSeller> | null;
   onSubmit: (data: Partial<DomainWithSeller>) => Promise<void>;
@@ -121,6 +119,8 @@ export default function DomainForm({
       pa_score: initialData?.pa_score || null,
       traffic: initialData?.traffic || null,
       category: initialData?.category || null,
+      country: initialData?.country || null,
+      premium: initialData?.premium || false,
       tags: initialData?.tags || [],
     },
   });
@@ -204,7 +204,7 @@ export default function DomainForm({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
           <Label htmlFor="price" className="text-gray-300">
             Price ($)
@@ -218,6 +218,19 @@ export default function DomainForm({
           />
           {errors.price && (
             <p className="text-red-400 text-sm mt-1">{errors.price.message}</p>
+          )}
+        </div>
+        <div>
+          <Label htmlFor="country" className="text-gray-300">
+            Country
+          </Label>
+          <Input
+            id="country"
+            {...register("country")}
+            className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
+          />
+          {errors.country && (
+            <p className="text-red-400 text-sm mt-1">{errors.country.message}</p>
           )}
         </div>
         <div>
@@ -347,10 +360,7 @@ export default function DomainForm({
           name="category"
           control={control}
           render={({ field }) => (
-            <Select
-              onValueChange={field.onChange}
-              value={field.value || ""}
-            >
+            <Select onValueChange={field.onChange} value={field.value || ""}>
               <SelectTrigger className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
@@ -449,6 +459,19 @@ export default function DomainForm({
             {errors.admin_notes.message}
           </p>
         )}
+      </div>
+
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="premium"
+          {...register("premium")}
+          className="rounded bg-[#2a2a3a] border-[#3a3a4a] text-[#00ff9d] focus:ring-[#00ff9d]"
+          disabled={isSubmitting}
+        />
+        <Label htmlFor="premium" className="text-white">
+          Premium domain
+        </Label>
       </div>
 
       <div className="flex justify-end gap-4 pt-4">

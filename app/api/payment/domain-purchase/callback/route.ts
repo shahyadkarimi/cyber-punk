@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { OxapayService } from "@/lib/payment-services/oxapay-service"
-import { domainsService } from "@/lib/database-services/domains-service"
 
 export async function POST(request: Request) {
   try {
@@ -29,7 +28,6 @@ export async function POST(request: Request) {
         if (domainId && userId) {
           try {
             // Update domain status and buyer
-            // await domainsService.purchaseDomain(domainId, userId)
             console.log(`Domain ${domainId} purchased by user ${userId}`)
 
             // Return success

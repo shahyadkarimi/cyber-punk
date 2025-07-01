@@ -17,6 +17,8 @@ export interface Domain {
   pa_score: number | null;
   traffic: number | null;
   category: string | null;
+  country: string | null;
+  premium: boolean;
   tags: string[];
   approved_at: string | null;
   approved_by: string | null;

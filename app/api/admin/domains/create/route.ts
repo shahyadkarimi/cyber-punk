@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Domains from "@/models/DomainsModel";
-import { createDomain, editDomainAdmin } from "@/lib/validation";
+import { createDomain, domainAdmin } from "@/lib/validation";
 import connectDB from "@/lib/connectDB";
 import { getAuthUser } from "@/lib/auth";
 
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    const domainData = editDomainAdmin
+    const domainData = domainAdmin
       .partial({ id: true, seller_id: true })
       .safeParse(body);
 
@@ -34,6 +34,7 @@ export async function POST(request: NextRequest) {
       price,
       description,
       category,
+      country,
       tags,
       status,
       seller_id,
@@ -41,6 +42,7 @@ export async function POST(request: NextRequest) {
       da_score,
       pa_score,
       traffic,
+      premium,
     } = domainData.data;
 
     const exists = await Domains.findOne({ domain: domain.trim() });
@@ -57,6 +59,7 @@ export async function POST(request: NextRequest) {
       description,
       price,
       category,
+      country,
       tags,
       seller_id,
       status,
@@ -64,6 +67,7 @@ export async function POST(request: NextRequest) {
       da_score,
       pa_score,
       traffic,
+      premium,
     });
 
     return NextResponse.json(

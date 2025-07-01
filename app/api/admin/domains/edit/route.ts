@@ -1,6 +1,6 @@
 import { getAuthUser } from "@/lib/auth";
 import connectDB from "@/lib/connectDB";
-import { editDomainAdmin } from "@/lib/validation";
+import { domainAdmin } from "@/lib/validation";
 import Domains from "@/models/DomainsModel";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const DomainData = editDomainAdmin.safeParse(body);
+    const DomainData = domainAdmin.safeParse(body);
     // const DomainData = body;
 
     if (!DomainData.success) {
@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
       price,
       description,
       category,
+      country,
       tags,
       status,
       seller_id,
@@ -38,6 +39,7 @@ export async function POST(request: NextRequest) {
       da_score,
       pa_score,
       traffic,
+      premium,
     } = DomainData.data;
 
     const userDomain = await Domains.findById(id);
@@ -65,6 +67,7 @@ export async function POST(request: NextRequest) {
         price,
         description,
         category,
+        country,
         tags,
         status,
         seller_id,
@@ -72,6 +75,7 @@ export async function POST(request: NextRequest) {
         da_score,
         pa_score,
         traffic,
+        premium,
         updated_at: new Date(),
       },
       {

@@ -40,10 +40,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import {
-  domainsService,
-  DomainWithSeller,
-} from "@/lib/database-services/domains-service";
 import { getData, postData } from "@/services/API";
 import { Label } from "../ui/label";
 import { Alert, AlertDescription } from "../ui/alert";

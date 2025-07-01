@@ -1,6 +1,6 @@
 import { Redis } from "@upstash/redis";
 
 export const redisClient = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL!,
-  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
+  url: "https://classic-shark-36617.upstash.io"!,
+  token: "AY8JAAIjcDE5M2Q4OTY3ZGZiYzU0Mzc2OTdhYTY4MTQxNGZlNTZlY3AxMA"!,
 });

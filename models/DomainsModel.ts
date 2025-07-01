@@ -13,6 +13,8 @@ export interface Domains extends Document {
   pa_score?: number | null;
   traffic?: number | null;
   category?: string | null;
+  country?: string | null;
+  premium?: boolean;
   tags: string[];
   approved_at?: Date | null;
   approved_by?: Types.ObjectId | Users | null;
@@ -45,6 +47,8 @@ const DomainSchema: Schema = new Schema<Domains>({
   pa_score: { type: Number, default: null },
   traffic: { type: Number, default: null },
   category: { type: String, default: null },
+  country: { type: String, default: null },
+  premium: { type: Boolean, default: false },
   tags: { type: [String], default: [] },
   approved_at: { type: Date, default: null },
   approved_by: {

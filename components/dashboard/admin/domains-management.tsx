@@ -44,6 +44,8 @@ import {
   RefreshCw,
   Globe,
   Clock,
+  BadgeCheck,
+  Star,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { getData, postData } from "@/services/API";
@@ -268,7 +270,7 @@ export default function DomainsManagement() {
           },
           {
             title: "Total Revenue",
-            value: `$${stats.total_revenue?.toFixed(2)}`,
+            value: `$${stats.total_revenue?.toFixed(2) || 0.0}`,
             icon: DollarSign,
           },
         ].map((stat) => (
@@ -376,8 +378,13 @@ export default function DomainsManagement() {
                   key={domain.id}
                   className="border-b-[#2a2a3a] hover:bg-[#22222a]"
                 >
-                  <TableCell className="font-medium text-white">
-                    {domain.domain}
+                  <TableCell className="font-medium text-white flex items-center gap-1">
+                    {domain.domain}{" "}
+                    {domain.premium ? (
+                      <Star className="size-3.5 text-yellow-400 fill-current" />
+                    ) : (
+                      ""
+                    )}
                   </TableCell>
                   <TableCell className="text-gray-300">
                     ${domain.price?.toFixed(2)}

@@ -50,7 +50,6 @@ export default function ShellForm({
 
   useEffect(() => {
     if (initialData) {
-      console.log(initialData);
       setFormData({
         name: initialData.name || "",
         description: initialData.description || "",
