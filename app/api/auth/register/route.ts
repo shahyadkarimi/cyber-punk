@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
       password: hashedPassword,
       full_name: validatedData.full_name,
       username: validatedData.username,
+      role: validatedData.role,
     });
 
     await user.save();

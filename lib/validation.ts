@@ -11,6 +11,7 @@ export const registerSchema = z.object({
     .string()
     .min(3, "Username must be at least 3 characters")
     .optional(),
+  role: z.string().min(1, "Role is required"),
 });
 
 export const loginSchema = z.object({
