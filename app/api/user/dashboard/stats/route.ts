@@ -13,7 +13,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const domains = await Domains.find({ deleted_at: null })
+    const domains = await Domains.find({
+      seller_id: authUser.userId,
+      deleted_at: null,
+    })
       .populate("seller_id", "id username email")
       .populate("approved_by", "id username email")
       .sort({ created_at: -1 })
@@ -40,12 +43,13 @@ export async function GET(request: NextRequest) {
       deleted_at: item.deleted_at,
     }));
 
-    const [total_domains, pending_domains, approved_domains] = await Promise.all([
-      Domains.countDocuments({ deleted_at: null }),
-      Domains.countDocuments({ status: "pending", deleted_at: null }),
-      Domains.countDocuments({ status: "approved", deleted_at: null }),
-      Domains.countDocuments({ status: "rejected", deleted_at: null }),
-    ]);
+    const [total_domains, pending_domains, approved_domains] =
+      await Promise.all([
+        Domains.countDocuments({ deleted_at: null }),
+        Domains.countDocuments({ status: "pending", deleted_at: null }),
+        Domains.countDocuments({ status: "approved", deleted_at: null }),
+        Domains.countDocuments({ status: "rejected", deleted_at: null }),
+      ]);
 
     return NextResponse.json(
       {
