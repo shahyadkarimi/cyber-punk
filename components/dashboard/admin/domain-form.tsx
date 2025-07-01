@@ -182,6 +182,7 @@ export default function DomainForm({
     setActiveTab(value);
 
     if (value === "automatic") {
+      setShellUrl("");
       clearAllFields();
 
       setCurrentTags([]);

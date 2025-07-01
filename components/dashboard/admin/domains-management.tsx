@@ -49,6 +49,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { getData, postData } from "@/services/API";
+import { Toaster } from "@/components/ui/toaster";
 
 export const statusColors: Record<string, string> = {
   pending: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30",
@@ -101,12 +102,13 @@ export default function DomainsManagement() {
   }, []);
 
   const AddEditFormHandler = async (domainData: Partial<DomainWithSeller>) => {
-    if (!user?._id) {
+    if (user?._id) {
       toast({
         title: "Authentication Error",
         description: "Admin user ID not found.",
-        variant: "destructive",
+        variant: "default",
       });
+
       return;
     }
 
@@ -144,7 +146,7 @@ export default function DomainsManagement() {
     } else {
       postData("/admin/domains/create", {
         ...domainData,
-        seller_id: domainData.seller_id || user._id,
+        seller_id: domainData.seller_id || user?._id,
         price: Number(domainData.price),
         da_score: Number(domainData.da_score),
         pa_score: Number(domainData.pa_score),
@@ -249,6 +251,8 @@ export default function DomainsManagement() {
 
   return (
     <div className="space-y-6">
+      <Toaster />
+
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {[

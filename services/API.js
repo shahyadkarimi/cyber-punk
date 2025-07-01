@@ -1,7 +1,9 @@
 import axios from "axios";
 
-const hostName = "http://localhost:3000";
-// process.env.NODE_ENV === "development" ? "http://localhost:3000" : "https://chess-production-9ba7.up.railway.app";
+const hostName =
+  process.env.NODE_ENV === "production"
+    ? "https://cyber-punk-beta.vercel.app"
+    : "http://localhost:3000";
 
 export const baseURL = `${hostName}/api`;
 export const siteURL = `${hostName}`;
