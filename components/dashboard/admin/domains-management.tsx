@@ -102,7 +102,7 @@ export default function DomainsManagement() {
   }, []);
 
   const AddEditFormHandler = async (domainData: Partial<DomainWithSeller>) => {
-    if (user?._id) {
+    if (!user?._id) {
       toast({
         title: "Authentication Error",
         description: "Admin user ID not found.",

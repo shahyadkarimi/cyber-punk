@@ -3,7 +3,7 @@ import { Github, Shield, ExternalLink } from "lucide-react"
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0a0a0c] border-t border-[#2a2a3a] py-8 relative z-10">
+    <footer className="bg-[#0a0a0c] border-t border-[#2a2a3a] py-8 relative">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
