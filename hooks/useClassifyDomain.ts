@@ -3,7 +3,7 @@ import { parse } from "tldts";
 import { getName } from "country-list";
 
 export const useClassifyDomain = (url: string) => {
-  const { publicSuffix, subdomain } = parse(url);
+  const { hostname, publicSuffix, subdomain } = parse(url);
 
   const tldParts = publicSuffix?.split(".") || [];
   const countryCode = tldParts[tldParts.length - 1]?.toUpperCase() || "";
@@ -84,5 +84,5 @@ export const useClassifyDomain = (url: string) => {
     if (category !== "Other") break;
   }
 
-  return { country: countryName, category };
+  return { hostname, country: countryName, category };
 };

@@ -27,6 +27,8 @@ import { User } from "@/hooks/use-auth";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { domainCategories } from "../domain-submission-form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PencilLine, X } from "lucide-react";
+import { useClassifyDomain } from "@/hooks/useClassifyDomain";
 
 const domainSchema = z.object({
   domain: z
@@ -105,6 +107,24 @@ export default function DomainForm({
   );
   const [shellUrl, setShellUrl] = useState<string>("");
 
+  const clearAllFields = () => {
+    reset({
+      domain: "",
+      description: "",
+      price: null,
+      status: "pending",
+      seller_id: "",
+      admin_notes: "",
+      da_score: null,
+      pa_score: null,
+      traffic: null,
+      category: "",
+      country: "",
+      premium: false,
+      tags: [],
+    });
+  };
+
   const {
     control,
     handleSubmit,
@@ -133,21 +153,7 @@ export default function DomainForm({
 
   useEffect(() => {
     if (!initialData) {
-      reset({
-        domain: "",
-        description: "",
-        price: null,
-        status: "pending",
-        seller_id: "",
-        admin_notes: "",
-        da_score: null,
-        pa_score: null,
-        traffic: null,
-        category: "",
-        country: "",
-        premium: false,
-        tags: [],
-      });
+      clearAllFields();
 
       setCurrentTags([]);
     } else {
@@ -176,21 +182,7 @@ export default function DomainForm({
     setActiveTab(value);
 
     if (value === "automatic") {
-      reset({
-        domain: "",
-        description: "",
-        price: null,
-        status: "pending",
-        seller_id: "",
-        admin_notes: "",
-        da_score: null,
-        pa_score: null,
-        traffic: null,
-        category: "",
-        country: "",
-        premium: false,
-        tags: [],
-      });
+      clearAllFields();
 
       setCurrentTags([]);
     } else {
@@ -215,8 +207,20 @@ export default function DomainForm({
   };
 
   const automaticFillForms = () => {
-    
-  }
+    const { category, country, hostname } = useClassifyDomain(shellUrl);
+
+    console.log(category, country, hostname);
+
+    setValue("domain", hostname || "");
+    setValue("category", category || "");
+    setValue("country", hostname || "");
+  };
+
+  const clearAutomaticMode = () => {
+    setShellUrl("");
+
+    clearAllFields();
+  };
 
   return (
     <form
@@ -249,12 +253,36 @@ export default function DomainForm({
             <Label htmlFor="shell" className="text-gray-300">
               Webshell
             </Label>
-            <Input
-              id="shell"
-              value={shellUrl}
-              onChange={(e) => setShellUrl(e.target.value)}
-              className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
-            />
+
+            <div className="relative flex flex-col gap-1">
+              <Input
+                id="shell"
+                value={shellUrl}
+                onChange={(e) => setShellUrl(e.target.value)}
+                className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d] pr-28"
+              />
+
+              <button
+                type="button"
+                onClick={automaticFillForms}
+                className="flex h-6 hover:bg-neon-green/20 text-neon-green justify-center items-center gap-0.5 px-2 transition-all duration-300 absolute right-2 top-2/4 -translate-y-2/4"
+              >
+                <PencilLine className="size-4" />
+
+                <span className="text-xs">Auto fill</span>
+              </button>
+            </div>
+
+            {shellUrl && (
+              <button
+                type="button"
+                onClick={clearAutomaticMode}
+                className="text-red-600 text-xs flex items-center gap-0.5 mt-0.5"
+              >
+                <X className="size-4" />
+                <span>Clear</span>
+              </button>
+            )}
             {/* {errors.shell && (
               <p className="text-red-400 text-sm mt-1">
                 {errors.shell.message}
@@ -357,7 +385,7 @@ export default function DomainForm({
           )}
         </div>
       </div>
-{/* 
+      {/* 
       <div>
         <Label htmlFor="seller_id" className="text-gray-300">
           Seller
@@ -576,8 +604,8 @@ export default function DomainForm({
         <Button
           type="button"
           onClick={() => {
-            onCancel()
-            clearErrors()
+            onCancel();
+            clearErrors();
           }}
           variant="outline"
           className="text-gray-300 border-gray-600 hover:bg-gray-700"
