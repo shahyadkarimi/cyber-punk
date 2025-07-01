@@ -92,7 +92,7 @@ export default function DomainsManagement() {
         toast({
           title: err?.response?.data?.error,
           description: err.message,
-          variant: "destructive",
+          variant: "default",
         });
       });
   };
@@ -156,8 +156,8 @@ export default function DomainsManagement() {
           setFormLoading(false);
 
           toast({
-            title: "Domain Updated",
-            description: `${domainData?.domain} has been updated.`,
+            title: "Domain Created",
+            description: `${domainData?.domain} has been created.`,
           });
 
           setIsFormOpen(false);
@@ -194,7 +194,7 @@ export default function DomainsManagement() {
       toast({
         title: "Authentication Error",
         description: "Admin user ID not found.",
-        variant: "destructive",
+        variant: "default",
       });
       return;
     }
@@ -217,7 +217,7 @@ export default function DomainsManagement() {
         toast({
           title: "Error updating status",
           description: err?.response?.data?.error,
-          variant: "destructive",
+          variant: "default",
         });
       });
   };
@@ -235,9 +235,15 @@ export default function DomainsManagement() {
       id: selectedDomain?.id,
     })
       .then((res) => {
+        toast({
+          title: "Domain Deleted",
+          description: `${selectedDomain?.domain} has been deleted.`,
+        });
+        
         setSelectedDomain(null);
         setDeleteDialogOpen(false);
         setDeleteLoading(false);
+
 
         // refresh domains
         fetchDomains();
