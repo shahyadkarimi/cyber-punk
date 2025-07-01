@@ -26,6 +26,7 @@ import { toast } from "@/hooks/use-toast";
 import { User } from "@/hooks/use-auth";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { domainCategories } from "../domain-submission-form";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const domainSchema = z.object({
   domain: z
@@ -99,6 +100,10 @@ export default function DomainForm({
   const [tagInput, setTagInput] = useState("");
   const [sellers, setSellers] = useState([]);
   const [isLoadingSellers, setIsLoadingSellers] = useState(false);
+  const [activeTab, setActiveTab] = useState<string | "manuel" | "automatic">(
+    "manuel"
+  );
+  const [shellUrl, setShellUrl] = useState<string>("");
 
   const {
     control,
@@ -106,6 +111,7 @@ export default function DomainForm({
     register,
     reset,
     setValue,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm({
     defaultValues: {
@@ -138,8 +144,11 @@ export default function DomainForm({
         pa_score: null,
         traffic: null,
         category: "",
+        country: "",
+        premium: false,
         tags: [],
       });
+
       setCurrentTags([]);
     } else {
       setCurrentTags(initialData.tags || []);
@@ -163,11 +172,98 @@ export default function DomainForm({
     setCurrentTags(newData);
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+
+    if (value === "automatic") {
+      reset({
+        domain: "",
+        description: "",
+        price: null,
+        status: "pending",
+        seller_id: "",
+        admin_notes: "",
+        da_score: null,
+        pa_score: null,
+        traffic: null,
+        category: "",
+        country: "",
+        premium: false,
+        tags: [],
+      });
+
+      setCurrentTags([]);
+    } else {
+      reset({
+        domain: initialData?.domain || "",
+        description: initialData?.description || null,
+        price: initialData?.price || null,
+        status: initialData?.status || "pending",
+        seller_id: initialData?.seller?._id,
+        admin_notes: initialData?.admin_notes || null,
+        da_score: initialData?.da_score || null,
+        pa_score: initialData?.pa_score || null,
+        traffic: initialData?.traffic || null,
+        category: initialData?.category || null,
+        country: initialData?.country || null,
+        premium: initialData?.premium || false,
+        tags: initialData?.tags || [],
+      });
+
+      setCurrentTags(initialData?.tags || []);
+    }
+  };
+
+  const automaticFillForms = () => {
+    
+  }
+
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
       className="space-y-6 py-4 max-h-[80vh] overflow-y-auto pr-2"
     >
+      <Tabs
+        defaultValue="manuel"
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="w-full"
+      >
+        <TabsList className="grid grid-cols-2 mb-4 bg-[#1a1a1a] border border-[#2a2a3a]">
+          <TabsTrigger
+            value="manuel"
+            className="data-[state=active]:bg-[#2a2a3a] data-[state=active]:text-[#00ff9d]"
+          >
+            Manuel
+          </TabsTrigger>
+          <TabsTrigger
+            value="automatic"
+            className="data-[state=active]:bg-[#2a2a3a] data-[state=active]:text-[#00ff9d]"
+          >
+            Automatic
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="automatic" className="mt-0">
+          <div>
+            <Label htmlFor="shell" className="text-gray-300">
+              Webshell
+            </Label>
+            <Input
+              id="shell"
+              value={shellUrl}
+              onChange={(e) => setShellUrl(e.target.value)}
+              className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
+            />
+            {/* {errors.shell && (
+              <p className="text-red-400 text-sm mt-1">
+                {errors.shell.message}
+              </p>
+            )} */}
+          </div>
+        </TabsContent>
+      </Tabs>
+
       {error && (
         <Alert className="border-red-500/50 bg-red-500/10 mb-2">
           <AlertDescription className="text-red-400">{error}</AlertDescription>
@@ -230,7 +326,9 @@ export default function DomainForm({
             className="bg-[#0d0d0d] border-[#2a2a3a] text-white focus:border-[#00ff9d]"
           />
           {errors.country && (
-            <p className="text-red-400 text-sm mt-1">{errors.country.message}</p>
+            <p className="text-red-400 text-sm mt-1">
+              {errors.country.message}
+            </p>
           )}
         </div>
         <div>
@@ -259,7 +357,7 @@ export default function DomainForm({
           )}
         </div>
       </div>
-
+{/* 
       <div>
         <Label htmlFor="seller_id" className="text-gray-300">
           Seller
@@ -298,7 +396,7 @@ export default function DomainForm({
             {errors.seller_id.message}
           </p>
         )}
-      </div>
+      </div> */}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div>
@@ -477,7 +575,10 @@ export default function DomainForm({
       <div className="flex justify-end gap-4 pt-4">
         <Button
           type="button"
-          onClick={onCancel}
+          onClick={() => {
+            onCancel()
+            clearErrors()
+          }}
           variant="outline"
           className="text-gray-300 border-gray-600 hover:bg-gray-700"
         >

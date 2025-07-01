@@ -36,7 +36,23 @@ export const domainCategories = [
   { name: "Business" },
   { name: "Entertainment" },
   { name: "Health" },
+  { name: "Government" },
+  { name: "Organization" },
+  { name: "Military" },
+  { name: "Commercial" },
+  { name: "Network" },
+  { name: "International" },
+  { name: "Company" },
+  { name: "Healthcare" },
   { name: "Finance" },
+  { name: "Legal" },
+  { name: "Cultural" },
+  { name: "News" },
+  { name: "Science" },
+  { name: "Retail" },
+  { name: "Media" },
+  { name: "Personal" },
+  { name: "Other" },
 ];
 
 export default function DomainSubmissionForm() {
