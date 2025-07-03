@@ -2,7 +2,7 @@ import axios from "axios";
 
 const hostName =
   process.env.NODE_ENV === "production"
-    ? "https://cyber-punk-beta.vercel.app"
+    ? "https://xteamsec.com"
     : "http://localhost:3000";
 
 export const baseURL = `${hostName}/api`;
