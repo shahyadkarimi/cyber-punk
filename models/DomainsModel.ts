@@ -1,7 +1,8 @@
 import mongoose, { Schema, type Document, Types } from "mongoose";
-import type { Users } from "./UsersModel"; // مطمئن شو مسیر درست به مدل User هست
+import type { Users } from "./UsersModel";
 
 export interface Domains extends Document {
+  id: number;
   domain: string;
   description?: string | null;
   price?: number | null;
@@ -24,6 +25,7 @@ export interface Domains extends Document {
 }
 
 const DomainSchema: Schema = new Schema<Domains>({
+  id: { type: Number, required: true, unique: true },
   domain: { type: String, required: true, unique: true },
   description: { type: String, default: null },
   price: { type: Number, default: null },

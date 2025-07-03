@@ -54,7 +54,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const domainCount = await Domains.countDocuments({});
+    const generatedId = domainCount + 1;
+
     const newDomain = await Domains.create({
+      id: generatedId,
       domain: domain.trim(),
       description,
       price,

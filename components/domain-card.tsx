@@ -47,6 +47,7 @@ export function DomainCard({ domain, viewMode = "grid" }: DomainCardProps) {
       window.location.href = "/auth/login?redirect=/domains";
       return;
     }
+  
     setShowPurchaseModal(true);
   };
 

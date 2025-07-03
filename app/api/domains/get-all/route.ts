@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     ]);
 
     const formattedDomains = domains.map((item) => ({
-      id: item._id,
+      id: item.id,
       domain: item.domain,
       description: item.description,
       price: item.price,
