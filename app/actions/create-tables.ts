@@ -270,7 +270,7 @@ export async function insertSampleData() {
       .from("users")
       .insert([
         {
-          email: "admin@trxsecurity.com",
+          email: "admin@XTeamSec.com",
           username: "trxadmin",
           full_name: "TRX Administrator",
           role: "admin",

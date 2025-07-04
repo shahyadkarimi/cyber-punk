@@ -14,7 +14,7 @@ import {
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Premium Backlinks Service | TRXSecurity",
+  title: "Premium Backlinks Service | XTeamSec",
   description:
     "Acquire high-quality backlinks from authoritative sources like government, university, and high-ranking websites. Boost your clients' SEO rankings with our premium backlink service.",
   keywords:
@@ -236,7 +236,7 @@ export default function BacklinksPage() {
               },
               {
                 quote:
-                  "We've tried many backlink services, but none delivered the quality and results that we've seen with TRXSecurity's backlinks.",
+                  "We've tried many backlink services, but none delivered the quality and results that we've seen with XTeamSec's backlinks.",
                 author: "Sarah T., Digital Marketing Director",
                 company: "Apex Digital",
               },

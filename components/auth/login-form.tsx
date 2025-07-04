@@ -77,7 +77,7 @@ export default function LoginForm() {
             Access Terminal
           </CardTitle>
           <CardDescription className="text-gray-400">
-            Enter your credentials to access TRXSecurity
+            Enter your credentials to access XTeamSec
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -101,7 +101,7 @@ export default function LoginForm() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="bg-[#2a2a3a] border-[#3a3a4a] text-white focus:border-[#00ff9d]"
-                placeholder="user@trxsecurity.com"
+                placeholder="user@XTeamSec.com"
               />
             </div>
 

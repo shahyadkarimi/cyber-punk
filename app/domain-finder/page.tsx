@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import DomainFinderTool from "@/components/domain-finder-tool"
 
 export const metadata: Metadata = {
-  title: "Domain & Subdomain Finder | TRXSecurity",
+  title: "Domain & Subdomain Finder | XTeamSec",
   description: "Find domains, subdomains and detect CMS types for cybersecurity research and penetration testing.",
   keywords: "domain finder, subdomain finder, CMS detection, cybersecurity tools, penetration testing",
 }

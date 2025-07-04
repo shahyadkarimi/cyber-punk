@@ -39,7 +39,7 @@ export default function TRXHero() {
           <p
             className={`max-w-2xl mx-auto text-gray-400 mb-8 transition-all duration-1000 delay-300 ${loaded ? "opacity-100 transform-none" : "opacity-0 translate-y-10"}`}
           >
-            TRXSecurity provides cutting-edge cybersecurity tools for security researchers, penetration testers, and
+            XTeamSec provides cutting-edge cybersecurity tools for security researchers, penetration testers, and
             ethical hackers. Our platform offers web shells, exploits, and security utilities designed for educational
             purposes and authorized security testing.
           </p>

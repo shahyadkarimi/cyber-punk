@@ -52,7 +52,7 @@ export default function Header() {
             href="/"
             className="text-xl md:text-2xl font-mono font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-[#00ff9d] to-[#00b8ff] hover:from-[#00b8ff] hover:to-[#00ff9d] transition-all duration-300"
           >
-            <span className="glitch-text">TRXSecurity</span>
+            <span className="glitch-text">XTeamSec</span>
           </Link>
 
           {/* Desktop Navigation */}

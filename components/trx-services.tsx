@@ -57,7 +57,7 @@ export default function TrxServices() {
             Our Cybersecurity Services
           </h2>
           <p className="text-gray-400 font-mono max-w-2xl mx-auto">
-            TRXSecurity offers a comprehensive range of cybersecurity services to protect your digital assets from
+            XTeamSec offers a comprehensive range of cybersecurity services to protect your digital assets from
             evolving threats.
           </p>
         </div>
