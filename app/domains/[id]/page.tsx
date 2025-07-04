@@ -30,7 +30,6 @@ const Page = async ({ params }: { params: { id: string } }) => {
   const { id } = await params;
 
   const fetchData = async () => {
-    console.log(id);
     try {
       const domainRes = await fetch(`${baseURL}/domains/${id}`, {
         method: "GET",
