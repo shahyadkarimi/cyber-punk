@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import DaPaCheckerTool from "@/components/tools/da-pa-checker-tool"
 
 export const metadata: Metadata = {
-  title: "Domain Authority & Page Authority Checker | XTeamSec",
+  title: "Domain Authority & Page Authority Checker | XTeamSecurity",
   description: "Check Domain Authority (DA) and Page Authority (PA) for multiple domains without limits",
   keywords: "domain authority, page authority, DA, PA, SEO tools, bulk domain checker, cybersecurity tools",
 }

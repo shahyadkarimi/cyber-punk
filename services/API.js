@@ -2,7 +2,7 @@ import axios from "axios";
 
 const hostName =
   process.env.NODE_ENV === "production"
-    ? "http://xteamsec.com"
+    ? "http://XTeamSecurity.com"
     : "http://localhost:3000";
 
 export const baseURL = `${hostName}/api`;

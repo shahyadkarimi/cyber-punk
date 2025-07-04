@@ -93,19 +93,19 @@ export default function AnimatedLogo() {
 
       {/* Main logo text with glitch effect */}
       <div className={`relative z-10 transition-all duration-1000 ${loaded ? "opacity-100" : "opacity-0"}`}>
-        <h1 className="text-6xl md:text-7xl font-bold glitch-text" data-text="XTeamSec">
+        <h1 className="text-6xl md:text-7xl font-bold glitch-text" data-text="XTeamSecurity">
           <span className="relative inline-block">
             {/* Glitch layers */}
             <span className="absolute top-0 left-0 w-full h-full text-[#00ff9d] opacity-70 animate-glitch-1">
-              XTeamSec
+              XTeamSecurity
             </span>
             <span className="absolute top-0 left-0 w-full h-full text-[#00b8ff] opacity-70 animate-glitch-2">
-              XTeamSec
+              XTeamSecurity
             </span>
 
             {/* Main text with gradient */}
             <span className="relative text-transparent bg-clip-text bg-gradient-to-r from-[#00ff9d] to-[#00b8ff]">
-              XTeamSec
+              XTeamSecurity
             </span>
           </span>
         </h1>

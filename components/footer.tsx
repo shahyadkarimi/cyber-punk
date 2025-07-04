@@ -68,7 +68,7 @@ export default function Footer() {
 
         <div className="mt-8 pt-6 border-t border-[#2a2a3a] text-center">
           <p className="text-gray-400 font-mono text-sm">
-            &copy; {new Date().getFullYear()} XTeamSec Team. All rights reserved.
+            &copy; {new Date().getFullYear()} XTeamSecurity Team. All rights reserved.
           </p>
           <p className="text-gray-500 font-mono text-xs mt-1">
             Led by M@rAz Ali | For educational and ethical purposes only

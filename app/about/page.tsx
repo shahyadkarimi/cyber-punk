@@ -27,7 +27,7 @@ export default function AboutPage() {
           <div className="text-center max-w-3xl mx-auto">
             <AnimatedSection animation="zoom-in">
               <h1 className="text-4xl md:text-5xl font-bold mb-6 inline-block text-transparent bg-clip-text bg-gradient-to-r from-[#00ff9d] to-[#00b8ff] cyber-border">
-                <GlitchText text="About XTeamSec Team" />
+                <GlitchText text="About XTeamSecurity Team" />
               </h1>
             </AnimatedSection>
 
@@ -66,7 +66,7 @@ export default function AboutPage() {
               </h2>
               <div className="space-y-4 text-gray-300 font-mono">
                 <p className="hover-glow p-2">
-                  XTeamSec team was founded in 2018 by a group of security researchers with the aim of enhancing
+                  XTeamSecurity team was founded in 2018 by a group of security researchers with the aim of enhancing
                   cybersecurity and raising awareness about web vulnerabilities.
                 </p>
                 <p className="hover-glow p-2">
@@ -208,7 +208,7 @@ export default function AboutPage() {
               Our Achievements
             </h2>
             <p className="text-gray-400 font-mono max-w-2xl mx-auto">
-              Some of the successes and achievements of the XTeamSec team in recent years
+              Some of the successes and achievements of the XTeamSecurity team in recent years
             </p>
           </AnimatedSection>
 
@@ -326,19 +326,19 @@ export default function AboutPage() {
                     <span className="w-8 h-8 bg-[#2a2a3a] rounded-full flex items-center justify-center mr-3 animate-float">
                       <span className="text-[#00ff9d]">@</span>
                     </span>
-                    info@XTeamSec.com
+                    info@XTeamSecurity.com
                   </p>
                   <p className="flex items-center hover-glow p-2 rounded-md transition-all duration-300">
                     <span className="w-8 h-8 bg-[#2a2a3a] rounded-full flex items-center justify-center mr-3 animate-float animation-delay-2000">
                       <span className="text-[#00ff9d]">G</span>
                     </span>
-                    github.com/XTeamSec
+                    github.com/XTeamSecurity
                   </p>
                   <p className="flex items-center hover-glow p-2 rounded-md transition-all duration-300">
                     <span className="w-8 h-8 bg-[#2a2a3a] rounded-full flex items-center justify-center mr-3 animate-float animation-delay-4000">
                       <span className="text-[#00ff9d]">T</span>
                     </span>
-                    twitter.com/XTeamSec
+                    twitter.com/XTeamSecurity
                   </p>
                 </div>
               </AnimatedSection>
@@ -350,7 +350,7 @@ export default function AboutPage() {
                   resume.
                 </p>
                 <a
-                  href="mailto:careers@XTeamSec.com"
+                  href="mailto:careers@XTeamSecurity.com"
                   className="inline-block px-6 py-3 bg-gradient-to-r from-[#00ff9d] to-[#00b8ff] text-black font-bold rounded-md hover:opacity-90 transition-opacity hover-scale"
                 >
                   Send Resume

@@ -15,11 +15,11 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "XTeamSec | Advanced Security Tools",
+  title: "XTeamSecurity | Advanced Security Tools",
   description:
     "A comprehensive collection of web shells, security tools, and exploits for cybersecurity research and penetration testing.",
   keywords:
-    "web shells, security tools, exploits, cybersecurity, penetration testing, ethical hacking, XTeamSec",
+    "web shells, security tools, exploits, cybersecurity, penetration testing, ethical hacking, XTeamSecurity",
 };
 
 export default function RootLayout({
