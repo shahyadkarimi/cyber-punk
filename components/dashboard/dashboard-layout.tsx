@@ -56,7 +56,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const clientNavItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
-    { href: "/dashboard/marketplace", icon: ShoppingCart, label: "Marketplace" },
+    { href: "/domains", icon: ShoppingCart, label: "Marketplace" },
     { href: "/dashboard/purchases", icon: CheckCircle, label: "Purchases" },
     { href: "/dashboard/watchlist", icon: Clock, label: "Watchlist" },
     { href: "/dashboard/profile", icon: Settings, label: "Profile" },
