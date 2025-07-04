@@ -2,10 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/use-auth";
-import {
-  ShellsService,
-  type WebShell,
-} from "@/lib/database-services/shells-service";
+import { type WebShell } from "@/lib/database-services/shells-service";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

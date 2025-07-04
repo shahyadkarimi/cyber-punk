@@ -110,3 +110,15 @@ export const createWebShellSchema = z.object({
   tags: z.array(z.string()).optional(),
   is_active: z.boolean().optional(),
 });
+
+export const createExploitSchema = z.object({
+  id: z.string().min(1, "Exploit id is required"),
+  name: z.string().min(1, "Name is required"),
+  description: z.string().min(1, "Description is required"),
+  code: z.string().min(1, "Code is required"),
+  target_system: z.string().min(1, "Target system is required"),
+  cve_id: z.string().optional(),
+  severity: z.enum(["low", "medium", "high", "critical"]),
+  tags: z.array(z.string()).optional().default([]),
+  is_verified: z.boolean().default(false),
+});
