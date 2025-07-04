@@ -31,7 +31,7 @@ export default function Header() {
     { name: "Exploits", path: "/exploits", icon: <AlertTriangle className="h-4 w-4" /> },
     { name: "Domains", path: "/domains", icon: <ShoppingBag className="h-4 w-4" /> },
     { name: "Domain Finder", path: "/domain-finder", icon: <Globe className="h-4 w-4" /> },
-    { name: "Vuln Scanner", path: "/vuln-scanner", icon: <Shield className="h-4 w-4" /> },
+    // { name: "Vuln Scanner", path: "/vuln-scanner", icon: <Shield className="h-4 w-4" /> },
     { name: "Tools", path: "/tools", icon: <Wrench className="h-4 w-4" /> },
     { name: "About", path: "/about", icon: <Info className="h-4 w-4" /> },
   ]
