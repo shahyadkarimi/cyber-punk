@@ -14,7 +14,7 @@ export interface User {
   username?: string;
   full_name?: string;
   avatar_url?: string;
-  balance?: number,
+  balance?: number;
   role: "admin" | "seller" | "client";
   is_active: boolean;
   admin_approved: boolean;
@@ -28,6 +28,7 @@ interface RegisterData {
   full_name?: string;
   username?: string;
   role?: "admin" | "client" | "seller";
+  parent_referral?: string | null;
 }
 
 interface UpdateProfileData {

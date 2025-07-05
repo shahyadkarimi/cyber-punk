@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const { domain, description, price, category, tags } = parseResult.data;
 
     const exists = await Domains.findOne({ domain: domain.trim() });
-    
+
     if (exists) {
       return NextResponse.json(
         { error: "This domain has already been registered." },
@@ -40,7 +40,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const domainCount = await Domains.countDocuments({});
+    const generatedId = domainCount + 1;
+
     const newDomain = await Domains.create({
+      id: generatedId,
       domain: domain.trim(),
       description,
       price,

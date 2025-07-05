@@ -1,7 +1,7 @@
-import mongoose, { Schema, type Document } from "mongoose";
-import bcrypt from "bcryptjs";
+import mongoose, { Schema, Types, type Document } from "mongoose";
 
 export interface Users extends Document {
+  id: number;
   email: string;
   password: string;
   username?: string;
@@ -10,6 +10,8 @@ export interface Users extends Document {
   role: "admin" | "seller" | "client";
   is_active: boolean;
   last_login_at?: Date;
+  parent_referral?: number;
+  referral_code?: number;
   created_at: Date;
   updated_at: Date;
   deleted_at?: Date;
@@ -18,10 +20,10 @@ export interface Users extends Document {
   admin_approved: boolean;
   reset_token?: string;
   reset_token_expires?: Date;
-  comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
 const UserSchema: Schema = new Schema<Users>({
+  id: { type: Number, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   username: { type: String, unique: true, sparse: true, default: null },
@@ -34,6 +36,11 @@ const UserSchema: Schema = new Schema<Users>({
   },
   is_active: { type: Boolean, default: true },
   last_login_at: { type: Date, default: null },
+  referral_code: { type: Number, required: true, unique: true },
+  parent_referral: {
+    type: Number,
+    default: null,
+  },
   created_at: { type: Date, default: Date.now },
   updated_at: { type: Date, default: Date.now },
   deleted_at: { type: Date, default: null },

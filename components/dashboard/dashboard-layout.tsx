@@ -19,6 +19,7 @@ import {
   Code,
   LogOut,
   Home,
+  Link as LinkIcon
 } from "lucide-react"
 
 interface DashboardLayoutProps {
@@ -51,6 +52,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { href: "/dashboard/my-domains", icon: Globe, label: "My Domains" },
     { href: "/dashboard/submit-domain", icon: FileText, label: "Submit Domain" },
     { href: "/dashboard/sales", icon: DollarSign, label: "Sales" },
+    { href: "/dashboard/my-referrals", icon: LinkIcon, label: "Referrals" },
     { href: "/dashboard/profile", icon: Settings, label: "Profile" },
   ]
 
@@ -59,6 +61,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { href: "/domains", icon: ShoppingCart, label: "Marketplace" },
     { href: "/dashboard/purchases", icon: CheckCircle, label: "Purchases" },
     { href: "/dashboard/watchlist", icon: Clock, label: "Watchlist" },
+    { href: "/dashboard/my-referrals", icon: LinkIcon, label: "Referrals" },
     { href: "/dashboard/profile", icon: Settings, label: "Profile" },
   ]
 

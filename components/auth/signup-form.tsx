@@ -1,8 +1,8 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +26,7 @@ import Link from "next/link";
 import { Eye, EyeOff, Loader2, CheckCircle } from "lucide-react";
 import type { UserRole } from "@/lib/database.types";
 import { postData } from "@/services/API";
+import { Checkbox } from "../ui/checkbox";
 
 export default function SignupForm() {
   const [email, setEmail] = useState("");
@@ -34,12 +35,25 @@ export default function SignupForm() {
   const [username, setUsername] = useState("");
   const [role, setRole] = useState<UserRole>("client");
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const { register } = useAuth();
+  const [refCode, setRefCode] = useState<string>("");
+  const [showRef, setShowRef] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const RefCodeParam = searchParams.get("referral_code");
+
+  const numberRegex = /^\d*$/;
+
+  useEffect(() => {
+    if (numberRegex.test(RefCodeParam || "") && RefCodeParam?.length === 10) {
+      setShowRef(true);
+      setRefCode(RefCodeParam);
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,6 +85,7 @@ export default function SignupForm() {
       username: username.trim(),
       full_name: username.trim(),
       role,
+      parent_referral: showRef ? refCode : null,
     });
 
     if (registerResult.success) {
@@ -228,6 +243,39 @@ export default function SignupForm() {
                 placeholder="••••••••"
               />
             </div>
+
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="is_verified"
+                checked={showRef}
+                onCheckedChange={(checked) => setShowRef(checked as boolean)}
+                className="border-[#2a2a3a] data-[state=checked]:bg-[#00ff9d] data-[state=checked]:border-[#00ff9d]"
+              />
+              <Label htmlFor="is_verified" className="text-gray-300 font-mono">
+                You have referral code?
+              </Label>
+            </div>
+
+            {showRef && (
+              <div className="space-y-2">
+                <Label htmlFor="refCode" className="text-gray-300 font-mono">
+                  Referral code
+                </Label>
+                <Input
+                  id="refCode"
+                  type="refCode"
+                  value={refCode}
+                  onChange={(e) => {
+                    if (numberRegex.test(e.target.value)) {
+                      setRefCode(e.target.value);
+                    }
+                  }}
+                  required
+                  className="bg-[#2a2a3a] border-[#3a3a4a] text-white focus:border-[#00ff9d]"
+                  placeholder="1265874965"
+                />
+              </div>
+            )}
 
             <Button
               type="submit"

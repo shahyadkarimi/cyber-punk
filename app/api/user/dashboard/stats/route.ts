@@ -45,10 +45,25 @@ export async function GET(request: NextRequest) {
 
     const [total_domains, pending_domains, approved_domains] =
       await Promise.all([
-        Domains.countDocuments({ deleted_at: null }),
-        Domains.countDocuments({ status: "pending", deleted_at: null }),
-        Domains.countDocuments({ status: "approved", deleted_at: null }),
-        Domains.countDocuments({ status: "rejected", deleted_at: null }),
+        Domains.countDocuments({
+          deleted_at: null,
+          seller_id: authUser.userId,
+        }),
+        Domains.countDocuments({
+          status: "pending",
+          deleted_at: null,
+          seller_id: authUser.userId,
+        }),
+        Domains.countDocuments({
+          status: "approved",
+          deleted_at: null,
+          seller_id: authUser.userId,
+        }),
+        Domains.countDocuments({
+          status: "rejected",
+          deleted_at: null,
+          seller_id: authUser.userId,
+        }),
       ]);
 
     return NextResponse.json(

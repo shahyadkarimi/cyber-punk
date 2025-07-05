@@ -1,5 +1,5 @@
 import mongoose, { Schema, type Document, Types } from "mongoose";
-import type { Users } from "./UsersModel"; // مطمئن شو مسیر درست به مدل User هست
+import type { Users } from "./UsersModel";
 
 export interface WebShells extends Document {
   name: string;
