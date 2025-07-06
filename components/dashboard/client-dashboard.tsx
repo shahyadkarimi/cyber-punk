@@ -1,69 +1,61 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { ShoppingCart, CheckCircle, Clock, Globe, Search } from "lucide-react"
-import { supabase } from "@/lib/supabase"
-import { UserWallet } from "@/components/user-wallet"
-import Link from "next/link"
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart, CheckCircle, Clock, Globe, Search } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { UserWallet } from "@/components/user-wallet";
+import Link from "next/link";
+import { getData } from "@/services/API";
+import { useAuth } from "@/hooks/use-auth";
 
 interface ClientStats {
-  totalPurchases: number
-  watchlistCount: number
-  availableDomains: number
-  recentDomains: any[]
+  totalPurchases: number;
+  watchlistCount: number;
+  availableDomains: number;
+  recentDomains: any[];
 }
 
 export default function ClientDashboard() {
+  const { user } = useAuth();
   const [stats, setStats] = useState<ClientStats>({
     totalPurchases: 0,
     watchlistCount: 0,
     availableDomains: 0,
     recentDomains: [],
-  })
-  const [loading, setLoading] = useState(true)
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchClientStats()
-  }, [])
+    fetchClientStats();
+  }, []);
 
   const fetchClientStats = async () => {
-    try {
-      // Fetch available domains
-      const { data: domains, count: domainsCount } = await supabase
-        .from("domains")
-        .select(
-          `
-          *,
-          seller:users!domains_seller_id_fkey(username, email)
-        `,
-          { count: "exact" },
-        )
-        .eq("status", "approved")
-        .order("created_at", { ascending: false })
-        .limit(6)
+    if (!user) return;
 
-      setStats({
-        totalPurchases: 0, // TODO: Implement purchases tracking
-        watchlistCount: 0, // TODO: Implement watchlist
-        availableDomains: domainsCount || 0,
-        recentDomains: domains || [],
+    getData("/user/dashboard/stats")
+      .then((res) => {
+        setStats({
+          availableDomains: res.data.available_domains,
+          totalPurchases: res.data.my_purchases,
+          watchlistCount: res.data.watchlist,
+          recentDomains: res.data.domains || [],
+        });
+        setLoading(false);
       })
-    } catch (error) {
-      console.error("Error fetching client stats:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
+      .catch((err) => {
+        setLoading(false);
+      });
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00ff9d] border-t-transparent"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -88,37 +80,51 @@ export default function ClientDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="bg-[#1a1a1a] border-[#2a2a3a]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Available Domains</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">
+              Available Domains
+            </CardTitle>
             <Globe className="h-4 w-4 text-[#00ff9d]" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.availableDomains}</div>
+            <div className="text-2xl font-bold text-white">
+              {stats.availableDomains}
+            </div>
           </CardContent>
         </Card>
 
         <Card className="bg-[#1a1a1a] border-[#2a2a3a]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">My Purchases</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">
+              My Purchases
+            </CardTitle>
             <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.totalPurchases}</div>
+            <div className="text-2xl font-bold text-white">
+              {stats.totalPurchases}
+            </div>
           </CardContent>
         </Card>
 
         <Card className="bg-[#1a1a1a] border-[#2a2a3a]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Watchlist</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">
+              Watchlist
+            </CardTitle>
             <Clock className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.watchlistCount}</div>
+            <div className="text-2xl font-bold text-white">
+              {stats.watchlistCount}
+            </div>
           </CardContent>
         </Card>
 
         <Card className="bg-[#1a1a1a] border-[#2a2a3a]">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-400">Cart Items</CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-400">
+              Cart Items
+            </CardTitle>
             <ShoppingCart className="h-4 w-4 text-[#00ff9d]" />
           </CardHeader>
           <CardContent>
@@ -142,15 +148,25 @@ export default function ClientDashboard() {
             ) : (
               stats.recentDomains.map((domain) => (
                 <div key={domain.id} className="p-4 bg-[#2a2a3a] rounded-lg">
-                  <h3 className="font-medium text-white mb-2">{domain.domain}</h3>
-                  <p className="text-sm text-gray-400 mb-2">{domain.description}</p>
+                  <h3 className="font-medium text-white mb-2">
+                    {domain.domain}
+                  </h3>
+                  <p className="text-sm text-gray-400 mb-2">
+                    {domain.description || "without description"}
+                  </p>
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-[#00ff9d]">
                       ${domain.price?.toLocaleString() || "Contact"}
                     </span>
-                    <Badge variant="outline">Available</Badge>
+                    <Badge className="border-gray-200 text-gray-200">
+                      Available
+                    </Badge>
                   </div>
-                  <Button className="w-full mt-3 bg-[#00ff9d] text-black hover:bg-[#00e68a]">View Details</Button>
+                  <Link href={`/domains/${domain.id}`}>
+                    <Button className="w-full mt-3 bg-[#00ff9d] text-black hover:bg-[#00e68a]">
+                      View Details
+                    </Button>
+                  </Link>
                 </div>
               ))
             )}
@@ -158,5 +174,5 @@ export default function ClientDashboard() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

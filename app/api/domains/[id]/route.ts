@@ -2,10 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import connectDB from "@/lib/connectDB";
 import { getAuthUser } from "@/lib/auth";
 import Domains from "@/models/DomainsModel";
-import { DomainWithSeller } from "@/lib/database-services/domains-service";
+import WatchList from "@/models/WatchListModel";
+import { verifyToken } from "@/lib/jwt";
 
 interface DomainType {
   _id: string;
+  id: number;
   domain: string;
   description?: string;
   price?: number;
@@ -35,14 +37,12 @@ export async function GET(
 
     const { id } = context.params;
 
-    // Optional: احراز هویت
-    // const authUser = await getAuthUser(request);
-    // if (!authUser) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
+    const token = request.headers.get("x-auth-token");
+
+    const authUser = verifyToken(token);
 
     const domain = await Domains.findOne({
-      _id: id,
+      id: id,
       deleted_at: null,
     })
       .populate("seller_id", "id username email")
@@ -53,18 +53,29 @@ export async function GET(
       return NextResponse.json({ error: "Domain not found" }, { status: 404 });
     }
 
+    const watchlistCount = await WatchList.countDocuments({
+      domain: domain.id,
+    });
+
+    const isInWatchList = await WatchList.findOne({
+      user: authUser?.userId,
+      domain: domain.id,
+    });
+
     const formattedDomain = {
-      id: domain._id,
+      _id: domain._id,
+      id: domain.id,
       domain: domain.domain,
       description: domain.description,
       price: domain.price,
       status: domain.status,
-      seller: domain.seller_id,
-      //   buyer_id: domain.buyer_id,
+      seller: domain.seller_id || {},
+      watchlist_count: watchlistCount,
       da_score: domain.da_score,
       pa_score: domain.pa_score,
       traffic: domain.traffic,
       category: domain.category,
+      is_in_watchlist: Boolean(isInWatchList),
       tags: domain.tags,
       sold_at: domain.sold_at,
       created_at: domain.created_at,

@@ -4,7 +4,6 @@ import { verifyToken } from "./jwt";
 export async function getAuthUser(request: NextRequest) {
   try {
     const token = request.cookies.get("auth-token")?.value;
-
     if (!token) {
       return null;
     }

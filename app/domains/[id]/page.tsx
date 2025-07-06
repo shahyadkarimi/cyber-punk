@@ -17,6 +17,7 @@ import {
   Eye,
   CheckCircle,
   AlertCircle,
+  Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,19 +26,27 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { baseURL } from "@/services/API";
 import { getDomainInfo } from "@/helper/helper";
+import BookmarkShare from "./bookmark-share";
+import { cookies } from "next/headers";
 
 const Page = async ({ params }: { params: { id: string } }) => {
   const { id } = await params;
 
+  const token = (await cookies()).get("auth-token")?.value;
+
   const fetchData = async () => {
+    const headers: HeadersInit = token ? { "x-auth-token": token } : {};
+
     try {
       const domainRes = await fetch(`${baseURL}/domains/${id}`, {
         method: "GET",
         cache: "no-store",
+        headers,
       });
 
       return { domain: await domainRes.json() };
     } catch (error) {
+      console.log(error);
       return { error: "Faild to get domain information" };
     }
   };
@@ -98,29 +107,8 @@ const Page = async ({ params }: { params: { id: string } }) => {
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Marketplace
             </Button>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                // onClick={() => setIsFavorited(!isFavorited)}
-                className="text-white hover:bg-[#2a2a3a]"
-              >
-                <Heart
-                  className={`h-4 w-4 mr-2 ${
-                    false ? "fill-red-500 text-red-500" : ""
-                  }`}
-                />
-                {domain?.favorites || 0}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-white hover:bg-[#2a2a3a]"
-              >
-                <Share2 className="h-4 w-4 mr-2" />
-                Share
-              </Button>
-            </div>
+
+            <BookmarkShare domain={domain} />
           </div>
         </div>
       </div>
@@ -498,7 +486,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
                   </div>
                   <div>
                     <div className="font-semibold text-white flex items-center gap-2">
-                      {domain.seller.username}
+                      {domain?.seller?.username || "Unknown"}
                       <CheckCircle className="h-4 w-4 text-green-600" />
                       {/* {domain.seller.verified && (
                       )} */}
