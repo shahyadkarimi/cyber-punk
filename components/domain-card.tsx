@@ -47,25 +47,28 @@ export function DomainCard({ domain, viewMode = "grid" }: DomainCardProps) {
       window.location.href = "/auth/login?redirect=/domains";
       return;
     }
-  
+
     setShowPurchaseModal(true);
   };
 
   if (viewMode === "list") {
     return (
-      <Card className="border text-card-foreground shadow-sm bg-[#1a1a1a] border-[#2a2a3a] hover:shadow-lg transition-all duration-300">
+      <Card className="border text-card-foreground shadow-sm bg-[#1a1a1a] border-[#2a2a3a] hover:shadow-lg transition-all duration-300 group">
         <CardContent className="p-6">
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 dark:bg-blue-900 rounded-lg">
-                    <Globe className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                <Link
+                  href={`/domains/${domain.id}`}
+                  className="flex items-center gap-3"
+                >
+                  <div className="p-2 bg-slate-100/15 group-hover:bg-neon-green/15 rounded-lg transition-colors">
+                    <Globe className="h-5 w-5 text-slate-100 group-hover:text-neon-green" />
                   </div>
-                  <h3 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+                  <h3 className="text-lg font-bold text-slate-100 group-hover:text-neon-green transition-colors">
                     {domain.domain}
                   </h3>
-                </div>
+                </Link>
                 {domain.category && (
                   <Badge className={getCategoryColor(domain.category)}>
                     {domain.category}
@@ -73,29 +76,26 @@ export function DomainCard({ domain, viewMode = "grid" }: DomainCardProps) {
                 )}
               </div>
 
-              <p className="text-slate-600 mb-4 line-clamp-2">
+              <p className="text-slate-300 mb-6 line-clamp-3 min-h-[4.5rem]">
                 {domain.description || "Premium domain with high SEO value"}
               </p>
 
               <div className="flex items-center gap-6 text-sm">
-                {domain.da_score && (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-red-50 dark:bg-red-900/20 rounded-full">
-                    <TrendingUp className="h-4 w-4 text-red-600" />
-                    <span className="text-slate-600">DA:</span>
-                    <span className="text-red-600 font-semibold">
-                      {domain.da_score}
-                    </span>
-                  </div>
-                )}
-                {domain.pa_score && (
-                  <div className="flex items-center gap-2 px-3 py-1 bg-purple-50 dark:bg-purple-900/20 rounded-full">
-                    <TrendingUp className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                    <span className="text-slate-600">PA:</span>
-                    <span className="text-purple-600 dark:text-purple-400 font-semibold">
-                      {domain.pa_score}
-                    </span>
-                  </div>
-                )}
+                <div className="flex items-center gap-2 px-3 py-2 bg-red-900/20 rounded-lg">
+                  <TrendingUp className="h-4 w-4 text-red-600" />
+                  <span className="text-slate-100 text-sm">DA:</span>
+                  <span className="text-red-600 font-semibold">
+                    {domain.da_score || "N/A"}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2 px-3 py-2 bg-purple-900/20 rounded-lg">
+                  <TrendingUp className="h-4 w-4 text-purple-600" />
+                  <span className="text-slate-100 text-sm">PA:</span>
+                  <span className="text-purple-600 font-semibold">
+                    {domain.pa_score || "N/A"}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -107,8 +107,7 @@ export function DomainCard({ domain, viewMode = "grid" }: DomainCardProps) {
                 <Link href={`/domains/${domain.id}`}>
                   <Button
                     variant="outline"
-                    size="sm"
-                    className="border-slate-200 dark:border-slate-600"
+                    className="w-full hover:border-neon-green hover:text-neon-green"
                   >
                     <Eye className="h-4 w-4 mr-2" />
                     View Details
@@ -134,14 +133,17 @@ export function DomainCard({ domain, viewMode = "grid" }: DomainCardProps) {
       <Card className="border text-card-foreground shadow-sm bg-[#1a1a1a] border-[#2a2a3a] hover:shadow-lg transition-all duration-300 group">
         <CardContent className="p-6">
           <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
+            <Link
+              href={`/domains/${domain.id}`}
+              className="flex items-center gap-3"
+            >
               <div className="p-2 bg-slate-100/15 group-hover:bg-neon-green/15 rounded-lg transition-colors">
                 <Globe className="h-5 w-5 text-slate-100 group-hover:text-neon-green" />
               </div>
               <h3 className="text-lg font-bold text-slate-100 group-hover:text-neon-green transition-colors">
                 {domain.domain}
               </h3>
-            </div>
+            </Link>
             {domain.category && (
               <Badge className={getCategoryColor(domain.category)}>
                 {domain.category}

@@ -292,18 +292,16 @@ export function DomainsMarketplace() {
 
               <div className="flex items-center border bg-[#1a1a1a] border-[#2a2a3a] text-white">
                 <Button
-                  variant={viewMode === "grid" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("grid")}
-                  className="rounded-r-none"
+                  className={`${viewMode === "grid" ? "text-neon-green" : ""}`}
                 >
                   <Grid className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant={viewMode === "list" ? "default" : "ghost"}
                   size="sm"
                   onClick={() => setViewMode("list")}
-                  className="rounded-l-none"
+                  className={`${viewMode === "list" ? "text-neon-green" : ""}`}
                 >
                   <List className="h-4 w-4" />
                 </Button>
