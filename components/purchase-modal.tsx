@@ -72,17 +72,19 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
 
     const totalPrice = domain.price || 0;
 
+    const orderId = `domain-${domain.id}-${user._id}-${Date.now()}`;
+
     const paymentData = await OxapayService.createPayment({
       amount: totalPrice,
       currency: "USD",
       callbackUrl: `${window.location.origin}/api/payment/domain-purchase/callback`,
-      returnUrl: `${window.location.origin}/domains/${domain.id}/success`,
+      returnUrl: `${window.location.origin}/domain-payment/${orderId}`,
       description: `Purchase domain: ${domain.domain}`,
-      orderId: `domain-${domain.id}-${user._id}-${Date.now()}`,
+      orderId,
       email: user.email || "",
       sandbox: isDevelopment, // Use sandbox in development
     });
-    console.log(paymentData);
+
     if (paymentData.success && paymentData.paymentUrl) {
       setPaymentUrl(paymentData.paymentUrl);
       setStep("payment");

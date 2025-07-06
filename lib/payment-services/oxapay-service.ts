@@ -64,7 +64,8 @@ export class OxapayService {
 
       // Prepare request data with exact format expected by Oxapay
       const requestData = {
-        amount: Number(params.amount.toFixed(2)), // Ensure 2 decimal places
+        // amount: 0.5, // Ensure 2 decimal places
+        amount: Number(params.amount).toFixed(2), // Ensure 2 decimal places
         currency: params.currency.toUpperCase(),
         lifetime: params.lifetime || 30,
         fee_paid_by_payer: params.feePaidByPayer || 1,
@@ -163,20 +164,18 @@ export class OxapayService {
     }
   }
 
-  static async checkPaymentStatus(
-    trackId: string
-  ): Promise<{ status: string; orderId?: string; amount?: number }> {
+  static async checkPaymentStatus(trackId: string): Promise<{
+    status?: number;
+    orderId?: string;
+    trackId?: string;
+    amount?: number;
+    transaction_hash?: string;
+    currency?: string;
+    network?: string;
+    wallet_address?: string;
+    created_at: number;
+  }> {
     try {
-      // In development/preview mode, return a mock successful response
-      // if (this.IS_DEVELOPMENT) {
-      //   console.log("DEVELOPMENT MODE: Returning mock payment status");
-      //   return {
-      //     status: "paid",
-      //     orderId: trackId.includes("domain") ? trackId : "mock-order-id",
-      //     amount: 100,
-      //   };
-      // }
-
       if (!trackId) {
         throw new Error("Track ID is required");
       }
@@ -218,10 +217,18 @@ export class OxapayService {
         );
       }
 
+      console.log("checkPaymentStatus:", data);
+
       return {
-        status: data.status || "unknown",
-        orderId: data.order_id,
-        amount: data.amount ? Number(data.amount) : undefined,
+        status: data?.status || "unknown",
+        orderId: data?.data?.order_id,
+        trackId: data?.data?.track_id,
+        transaction_hash: data?.data?.txs[0]?.tx_hash,
+        currency: data?.data?.txs[0]?.currency,
+        network: data?.data?.txs[0]?.network,
+        wallet_address: data?.data?.txs[0]?.address,
+        amount: data?.data?.amount ? Number(data?.data?.amount) : undefined,
+        created_at: data?.data?.date,
       };
     } catch (error) {
       console.error("Error checking Oxapay payment status:", error);
