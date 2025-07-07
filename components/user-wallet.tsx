@@ -17,11 +17,12 @@ import {
   CreditCard,
   CheckCircle,
   AlertCircle,
-  TestTube,
+  CircleCheckBig,
 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { UsersService } from "@/lib/database-services/users-service";
 import { OxapayService } from "@/lib/payment-services/oxapay-service";
+import { getData, postData } from "@/services/API";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export function UserWallet() {
   const { user } = useAuth();
@@ -34,13 +35,54 @@ export function UserWallet() {
   >("input");
   const [paymentUrl, setPaymentUrl] = useState("");
   const [error, setError] = useState("");
-  const [testingConnection, setTestingConnection] = useState(false);
+  const [paymentInformation, setPaymentInformation] = useState({});
+  const [completePaymentError, setCompletePaymentError] = useState("");
+  const [completePaymentLoading, setCompletePaymentLoading] = useState(false);
+  const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [transaction, setTransaction] = useState<any>({});
+  const [transactionLoading, setTransactionLoading] = useState(false);
+
+  const searchParams = useSearchParams();
+
+  const transactionOrderId = searchParams.get("orderId");
+
+  const router = useRouter();
 
   useEffect(() => {
     if (user?._id) {
-      setBalance(user.balance || 0);
+      fetchBalance();
+    }
+
+    if (transactionOrderId) {
+      setTransactionLoading(true);
+
+      postData("/wallet-transactions/get", { orderId: transactionOrderId })
+        .then((res) => {
+          setTransactionLoading(false);
+          setPaymentSuccess(true);
+          setTransaction(res?.data?.transaction);
+        })
+        .catch((err) => {
+          setTransactionLoading(false);
+          setPaymentSuccess(false);
+        });
     }
   }, [user?._id]);
+
+  const fetchBalance = async () => {
+    if (!user?._id) return;
+
+    setLoading(true);
+    getData("/user/wallet-balance", {})
+      .then((res) => {
+        setBalance(res.data.balance);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error fetching balance:", err);
+        setLoading(false);
+      });
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -50,23 +92,7 @@ export function UserWallet() {
     }).format(price);
   };
 
-  const testConnection = async () => {
-    try {
-      setTestingConnection(true);
-      const result = await OxapayService.testConnection();
-      if (result.success) {
-        alert("Connection test successful! Oxapay API is working.");
-      } else {
-        alert(`Connection test failed: ${result.error}`);
-      }
-    } catch (error) {
-      alert(`Connection test failed: ${error}`);
-    } finally {
-      setTestingConnection(false);
-    }
-  };
-
-  const handleAddFunds = async () => {
+  const addFundHandler = async () => {
     try {
       const amountNum = Number.parseFloat(amount);
 
@@ -106,8 +132,8 @@ export function UserWallet() {
       const paymentData = await OxapayService.createPayment({
         amount: amountNum,
         currency: "USD",
-        callbackUrl: `${window.location.origin}/api/payment/callback`,
-        returnUrl: `${window.location.origin}/dashboard?payment=success&amount=${amountNum}`,
+        callbackUrl: `${window.location.origin}/api/payment/add-funds/callback`,
+        returnUrl: `${window.location.origin}/dashboard?orderId=${orderId}&amount=${amountNum}`,
         description: `Add $${amountNum.toFixed(2)} to wallet`,
         orderId: orderId,
         email: user.email,
@@ -115,7 +141,7 @@ export function UserWallet() {
           2
         )} to your wallet!`,
         lifetime: 30,
-        sandbox: false, // Set to true for testing
+        sandbox: true, // Set to true for testing
         feePaidByPayer: 1,
         underPaidCoverage: 2.5,
         toCurrency: "USDT",
@@ -123,8 +149,14 @@ export function UserWallet() {
         mixedPayment: true,
       });
 
-      if (paymentData.success && paymentData.paymentUrl) {
-        setPaymentUrl(paymentData.paymentUrl);
+      if (paymentData.success && paymentData?.paymentUrl) {
+        setPaymentInformation({
+          order_id: orderId,
+          track_id: paymentData.trackId,
+          status: "pending",
+          amount: amountNum,
+        });
+        setPaymentUrl(paymentData.paymentUrl || "");
         setPaymentStep("success");
       } else {
         throw new Error(paymentData.error || "Failed to create payment");
@@ -138,21 +170,22 @@ export function UserWallet() {
     }
   };
 
-  const handleCompletePayment = () => {
+  const completePaymentHandler = () => {
     if (paymentUrl) {
-      // Open payment URL in new tab
-      window.open(paymentUrl, "_blank");
+      setCompletePaymentLoading(true);
+      // create transactions
+      postData("/wallet-transactions/create", { ...paymentInformation })
+        .then((res) => {
+          // Open payment URL in new tab
+          router.push(paymentUrl);
+        })
+        .catch((err) => {
+          setCompletePaymentLoading(false);
 
-      // Show instructions
-      alert(
-        "Payment window opened. After completing payment, please refresh your balance."
-      );
-
-      // Close modal
-      setShowAddFunds(false);
-      setPaymentStep("input");
-      setAmount("");
-      setError("");
+          setCompletePaymentError(
+            err?.response?.data?.error || "Faild to redirect to oxapay"
+          );
+        });
     }
   };
 
@@ -166,52 +199,91 @@ export function UserWallet() {
   return (
     <>
       <Card className="bg-gradient-to-br from-[#1a1a2e] to-[#16213e] border-[#2a2a3a]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-[#d1f7ff]">
-            Wallet Balance
-          </CardTitle>
-          <Wallet className="h-4 w-4 text-[#00ff9d]" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-[#00ff9d] mb-4">
-            {loading ? "Loading..." : formatPrice(balance)}
+        {transactionLoading ? (
+          <div className="flex justify-center items-center py-6">
+            <div className="text-2xl font-bold text-[#00ff9d]">
+              Loading payment status...
+            </div>
           </div>
-          <div className="flex gap-2">
+        ) : paymentSuccess && transaction?.order_id ? (
+          <div className="w-full flex flex-col items-center py-6 gap-4">
+            <CircleCheckBig className="size-20 text-neon-green" />
+            <h4 className="text-neon-green font-black text-2xl">
+              Payment Success
+            </h4>
+
+            <p className="-mt-2.5 opacity-80">{`Thank you for adding $${transaction?.amount?.toFixed(
+              2
+            )} to your wallet!`}</p>
+
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-sm">Track Id</span>
+              <span className="opacity-80">
+                {transaction?.track_id || "N/A"}
+              </span>
+            </div>
+
+            <div className="flex flex-col items-center gap-0.5">
+              <span className="text-sm">Order Id</span>
+              <span className="opacity-80">
+                {transaction?.order_id || "N/A"}
+              </span>
+            </div>
+
+            <p className="text-neon-green">
+              New Wallet Balance: {formatPrice(balance)}
+            </p>
+
             <Button
-              onClick={() => setShowAddFunds(true)}
-              size="sm"
-              className="bg-gradient-to-r from-[#ff2a6d] to-[#05d9e8] hover:opacity-90"
+              onClick={() => {
+                setPaymentSuccess(false);
+                setTransaction({});
+                setTransactionLoading(false);
+                router.push("/dashboard");
+              }}
+              className="bg-[#00ff9d] text-black hover:bg-[#00e68a]"
             >
-              <Plus className="h-4 w-4 mr-1" />
-              Add Funds
-            </Button>
-            <Button
-              // onClick={fetchBalance}
-              size="sm"
-              variant="outline"
-              disabled={loading}
-              className="border-[#2a2a3a] text-[#d1f7ff] hover:bg-[#2a2a3a]"
-            >
-              <RefreshCw
-                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
-              />
-            </Button>
-            <Button
-              onClick={testConnection}
-              size="sm"
-              variant="outline"
-              disabled={testingConnection}
-              className="border-[#2a2a3a] text-[#d1f7ff] hover:bg-[#2a2a3a]"
-              title="Test Oxapay connection"
-            >
-              <TestTube
-                className={`h-4 w-4 ${
-                  testingConnection ? "animate-pulse" : ""
-                }`}
-              />
+              Ok, show my balance
             </Button>
           </div>
-        </CardContent>
+        ) : (
+          <>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-[#d1f7ff]">
+                Wallet Balance
+              </CardTitle>
+
+              <Wallet className="h-4 w-4 text-[#00ff9d]" />
+            </CardHeader>
+
+            <CardContent>
+              <div className="text-2xl font-bold text-[#00ff9d] mb-4">
+                {loading ? "Loading..." : formatPrice(balance)}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowAddFunds(true)}
+                  size="sm"
+                  className="bg-gradient-to-r from-[#ff2a6d] to-[#05d9e8] hover:opacity-90"
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Funds
+                </Button>
+                <Button
+                  onClick={fetchBalance}
+                  size="sm"
+                  variant="outline"
+                  disabled={loading}
+                  className="border-[#2a2a3a] text-[#d1f7ff] hover:bg-[#2a2a3a]"
+                >
+                  <RefreshCw
+                    className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+                  />
+                </Button>
+              </div>
+            </CardContent>
+          </>
+        )}
       </Card>
 
       <Dialog open={showAddFunds} onOpenChange={handleCloseModal}>
@@ -280,7 +352,7 @@ export function UserWallet() {
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleAddFunds}
+                  onClick={addFundHandler}
                   disabled={
                     !amount || Number.parseFloat(amount) <= 0 || !user?.email
                   }
@@ -314,11 +386,21 @@ export function UserWallet() {
                   {formatPrice(Number.parseFloat(amount))}
                 </p>
               </div>
+
+              {completePaymentError && (
+                <div className="bg-red-500/20 border border-red-500/30 text-red-400 px-3 py-2 rounded text-sm flex items-center gap-2">
+                  <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                  <span>{completePaymentError}</span>
+                </div>
+              )}
+
               <Button
-                onClick={handleCompletePayment}
+                onClick={completePaymentHandler}
                 className="w-full bg-gradient-to-r from-[#ff2a6d] to-[#05d9e8]"
               >
-                Complete Payment
+                {completePaymentLoading
+                  ? "Redirecting to Oxapay..."
+                  : "Complete Payment"}
               </Button>
               <p className="text-xs text-[#d1f7ff]/40">
                 You will be redirected to Oxapay to complete your payment

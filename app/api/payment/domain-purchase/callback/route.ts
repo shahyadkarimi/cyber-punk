@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const paymentData = await OxapayService.checkPaymentStatus(data.track_id);
     console.log("Payment status:", paymentData);
 
-    if (paymentData.status === 200 && paymentData.orderId) {
+    if (paymentData.status === "paid" && paymentData.orderId) {
       // Extract domain ID and user ID from the order ID
       // Format: domain-{domainId}-{userId}-{timestamp}
       const orderIdParts = paymentData.orderId.split("-");
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
               seller_id: domain.seller_id,
               buyer_id: userId,
               amount: paymentData.amount,
-              status: "paid",
+              status: paymentData.status,
               payment_method: "oxapay",
               transaction_hash: paymentData.transaction_hash,
               currency: paymentData.currency,

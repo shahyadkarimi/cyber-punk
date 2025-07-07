@@ -7,7 +7,8 @@ import WatchList from "@/models/WatchListModel";
 
 const formatDomain = (items: any) => {
   const formatted = items.map((item: any) => ({
-    id: item._id,
+    _id: item._id,
+    id: item.id,
     domain: item.domain,
     description: item.description,
     price: item.price,

@@ -8,7 +8,7 @@ import { captchaGenerator } from "@/lib/captcha"
 // Cache TTL for vulnerability scans (1 hour)
 const SCAN_CACHE_TTL = 3600000
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     // Get client IP for rate limiting
     const headersList = headers()

@@ -165,7 +165,7 @@ export class OxapayService {
   }
 
   static async checkPaymentStatus(trackId: string): Promise<{
-    status?: number;
+    status?: string;
     orderId?: string;
     trackId?: string;
     amount?: number;
@@ -220,7 +220,7 @@ export class OxapayService {
       console.log("checkPaymentStatus:", data);
 
       return {
-        status: data?.status || "unknown",
+        status: data?.data?.status || "unknown",
         orderId: data?.data?.order_id,
         trackId: data?.data?.track_id,
         transaction_hash: data?.data?.txs[0]?.tx_hash,
