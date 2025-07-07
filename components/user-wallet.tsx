@@ -141,7 +141,7 @@ export function UserWallet() {
           2
         )} to your wallet!`,
         lifetime: 30,
-        sandbox: true, // Set to true for testing
+        sandbox: false, // Set to true for testing
         feePaidByPayer: 1,
         underPaidCoverage: 2.5,
         toCurrency: "USDT",

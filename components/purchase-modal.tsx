@@ -78,7 +78,7 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
       amount: totalPrice,
       currency: "USD",
       callbackUrl: `${window.location.origin}/api/payment/domain-purchase/callback`,
-      returnUrl: `${window.location.origin}/domain-payment/${orderId}`,
+      returnUrl: `${window.location.origin}/payment-status?orderId=${orderId}`,
       description: `Purchase domain: ${domain.domain}`,
       orderId,
       email: user.email || "",

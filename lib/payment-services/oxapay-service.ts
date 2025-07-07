@@ -64,8 +64,8 @@ export class OxapayService {
 
       // Prepare request data with exact format expected by Oxapay
       const requestData = {
-        // amount: 0.5, // Ensure 2 decimal places
-        amount: Number(params.amount).toFixed(2), // Ensure 2 decimal places
+        amount: 0.1, // Ensure 2 decimal places
+        // amount: Number(params.amount).toFixed(2), // Ensure 2 decimal places
         currency: params.currency.toUpperCase(),
         lifetime: params.lifetime || 30,
         fee_paid_by_payer: params.feePaidByPayer || 1,
