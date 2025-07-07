@@ -8,7 +8,7 @@ import { AuthProvider } from "@/hooks/use-auth";
 import NextTopLoader from "nextjs-toploader"
 
 // Configure the JetBrains Mono font with the weights we need
-const jetbrainsMono = JetBrains_Mono({
+export const jetbrainsMono = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
   variable: "--font-jetbrains-mono",

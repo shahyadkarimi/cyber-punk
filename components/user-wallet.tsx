@@ -223,13 +223,6 @@ export function UserWallet() {
               </span>
             </div>
 
-            <div className="flex flex-col items-center gap-0.5">
-              <span className="text-sm">Order Id</span>
-              <span className="opacity-80">
-                {transaction?.order_id || "N/A"}
-              </span>
-            </div>
-
             <p className="text-neon-green">
               New Wallet Balance: {formatPrice(balance)}
             </p>
