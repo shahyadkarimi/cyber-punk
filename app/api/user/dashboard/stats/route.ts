@@ -4,6 +4,7 @@ import { getAuthUser } from "@/lib/auth";
 import connectDB from "@/lib/connectDB";
 import Domains from "@/models/DomainsModel";
 import WatchList from "@/models/WatchListModel";
+import Transactions from "@/models/TransactionsModel";
 
 const formatDomain = (items: any) => {
   const formatted = items.map((item: any) => ({
@@ -93,9 +94,26 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
+    const myPurchases = await Transactions.countDocuments({
+      buyer_id: authUser.userId,
+      status: "paid",
+    });
+
     const watchlistCount = await WatchList.countDocuments({
       user: authUser.userId,
     });
+
+    const sellerTransactions = await Transactions.find({
+      seller_id: authUser.userId,
+      status: "paid",
+    })
+      .select("-__v")
+      .lean();
+
+    const totalRevenue = sellerTransactions.reduce(
+      (sum, tx) => sum + (tx.amount || 0),
+      0
+    );
 
     if (authUser.role === "seller") {
       return NextResponse.json(
@@ -104,7 +122,7 @@ export async function GET(request: NextRequest) {
           total_domains,
           pending_domains,
           approved_domains,
-          total_earnings: 0,
+          total_earnings: totalRevenue,
         },
         { status: 200 }
       );
@@ -113,7 +131,7 @@ export async function GET(request: NextRequest) {
         {
           domains: recentlyDomainsFormatted,
           available_domains,
-          my_purchases: 0,
+          my_purchases: myPurchases,
           watchlist: watchlistCount,
           cart_items: 0,
         },

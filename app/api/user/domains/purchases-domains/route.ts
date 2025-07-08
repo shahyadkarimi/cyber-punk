@@ -10,7 +10,9 @@ export async function GET(request: NextRequest) {
 
     if (!authUser) {
       return NextResponse.json(
-        { error: "Unauthorized. Only clients can view their purchases domains" },
+        {
+          error: "Unauthorized. Only clients can view their purchases domains",
+        },
         { status: 403 }
       );
     }
@@ -18,6 +20,7 @@ export async function GET(request: NextRequest) {
     const purchasesDomains = await Domains.find({
       buyer_id: authUser.userId,
       deleted_at: null,
+      status: "sold",
     })
       .sort({ created_at: -1 })
       .select("_id domain price status created_at description category tags");
