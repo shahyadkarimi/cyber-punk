@@ -25,6 +25,7 @@ import { OxapayService } from "@/lib/payment-services/oxapay-service";
 import { domainsService } from "@/lib/database-services/domains-service"; // Fixed import
 import type { DomainWithSeller } from "@/lib/database-services/domains-service";
 import { postData } from "@/services/API";
+import { useRouter } from "next/navigation";
 
 interface PurchaseModalProps {
   domain: DomainWithSeller;
@@ -44,6 +45,8 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
   const [userBalance, setUserBalance] = useState(0);
   const [paymentUrl, setPaymentUrl] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
+  const [completeLoading, setCompleteLoading] = useState(false);
 
   // Check if we're in development/preview mode
   const isDevelopment =
@@ -72,26 +75,51 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
 
     const totalPrice = domain.price || 0;
 
-    const orderId = `domain-${domain.id}-${user._id}-${Date.now()}`;
+    if (paymentMethod === "balance") {
+      if (user?.balance || 0 < totalPrice) {
+        setError(
+          "Insufficient balance. Please add funds or choose another payment method."
+        );
+        setLoading(false);
+        return;
+      }
 
-    const paymentData = await OxapayService.createPayment({
-      amount: totalPrice,
-      currency: "USD",
-      callbackUrl: `${window.location.origin}/api/payment/domain-purchase/callback`,
-      returnUrl: `${window.location.origin}/payment-status?orderId=${orderId}`,
-      description: `Purchase domain: ${domain.domain}`,
-      orderId,
-      email: user.email || "",
-      sandbox: isDevelopment, // Use sandbox in development
-    });
+      postData("/payment/domain-purchase/wallet", { domainId: domain.id })
+        .then((res) => {
+          setTimeout(() => {
+            router.push(res.data.successUrl);
+          }, 2000);
 
-    if (paymentData.success && paymentData.paymentUrl) {
-      setPaymentUrl(paymentData.paymentUrl);
-      setStep("payment");
+          setStep("success");
+        })
+        .catch((err) => {
+          const errMsg = err?.response?.data?.error;
+          setError(errMsg || "Failed to process payment");
+          setStep("error");
+          throw new Error(errMsg || "Failed to create payment");
+        });
     } else {
-      setError(paymentData.error || "Failed to process payment");
-      setStep("error");
-      throw new Error(paymentData.error || "Failed to create payment");
+      const orderId = `domain-${domain.id}-${user._id}-${Date.now()}`;
+
+      const paymentData = await OxapayService.createPayment({
+        amount: totalPrice,
+        currency: "USD",
+        callbackUrl: `${window.location.origin}/api/payment/domain-purchase/callback`,
+        returnUrl: `${window.location.origin}/payment-status?orderId=${orderId}`,
+        description: `Purchase domain: ${domain.domain}`,
+        orderId,
+        email: user.email || "",
+        sandbox: isDevelopment, // Use sandbox in development
+      });
+
+      if (paymentData.success && paymentData.paymentUrl) {
+        setPaymentUrl(paymentData.paymentUrl);
+        setStep("payment");
+      } else {
+        setError(paymentData.error || "Failed to process payment");
+        setStep("error");
+        throw new Error(paymentData.error || "Failed to create payment");
+      }
     }
   };
 
@@ -109,7 +137,9 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
     // }
 
     if (paymentUrl) {
-      window.open(paymentUrl, "_blank");
+      // window.open(paymentUrl, "_blank");
+      setCompleteLoading(true);
+      router.push(paymentUrl);
     }
   };
 
@@ -295,7 +325,9 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
               onClick={handleCompletePayment}
               className="w-full bg-gradient-to-r from-[#ff2a6d] to-[#05d9e8]"
             >
-              Complete Payment
+              {completeLoading
+                ? "Redirecting to oxapay..."
+                : "Complete Payment"}
             </Button>
 
             <p className="text-xs text-[#d1f7ff]/40">
@@ -329,9 +361,7 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
               </ul>
             </div>
 
-            <Button onClick={handleClose} className="w-full">
-              Close
-            </Button>
+            <Button className="w-full">Redirecting to invoice page...</Button>
           </div>
         )}
 

@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     if (!OxapayService.verifyCallback(data)) {
       console.error("Invalid callback data");
       return NextResponse.json(
-        { success: false, message: "Invalid callback data" },
+        { success: false, error: "Invalid callback data" },
         { status: 400 }
       );
     }
@@ -35,16 +35,20 @@ export async function POST(request: NextRequest) {
             // Update domain status and buyer
             console.log(`Domain ${domainId} purchased by user ${userId}`);
 
-            const domain: DomainWithSeller | null = await Domains.findOne({
+            const domain = await Domains.findOne({
               id: domainId,
             });
 
             if (!domain) {
               return NextResponse.json(
-                { success: false, message: "Domain not found" },
+                { success: false, error: "Domain not found" },
                 { status: 404 }
               );
             }
+
+            domain.buyer_id = userId;
+            domain.status = "sold";
+            await domain.save();
 
             const transaction = new Transactions({
               order_id: paymentData.orderId,
@@ -68,12 +72,12 @@ export async function POST(request: NextRequest) {
             // Return success
             return NextResponse.json({
               success: true,
-              message: "Domain purchased successfully",
+              error: "Domain purchased successfully",
             });
           } catch (error) {
             console.error("Error updating domain:", error);
             return NextResponse.json(
-              { success: false, message: "Failed to update domain" },
+              { success: false, error: "Failed to update domain" },
               { status: 500 }
             );
           }
@@ -82,13 +86,13 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json(
-      { success: false, message: "Payment not completed or invalid order" },
+      { success: false, error: "Payment not completed or invalid order" },
       { status: 400 }
     );
   } catch (error) {
     console.error("Domain purchase callback error:", error);
     return NextResponse.json(
-      { success: false, message: "Internal server error" },
+      { success: false, error: "Internal server error" },
       { status: 500 }
     );
   }

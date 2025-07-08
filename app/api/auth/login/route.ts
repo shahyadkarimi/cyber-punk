@@ -16,7 +16,9 @@ export async function POST(request: NextRequest) {
     const validatedData = loginSchema.parse(body);
 
     // Find user by email
-    const user = await User.findOne({ email: validatedData.email });
+    const user = await User.findOne({ email: validatedData.email }).select(
+      "-reset_token -reset_token_expires"
+    );
     if (!user) {
       return Response.json(
         { error: "Invalid email or password" },
@@ -42,7 +44,6 @@ export async function POST(request: NextRequest) {
         { error: "Invalid email or password" },
         { status: 401 }
       );
-    
     }
     // Update last login
     user.last_login_at = new Date();
@@ -55,24 +56,11 @@ export async function POST(request: NextRequest) {
       role: user.role,
     });
 
-    // Return user data without password
-    const userData = {
-      id: user._id,
-      email: user.email,
-      username: user.username,
-      full_name: user.full_name,
-      avatar_url: user.avatar_url,
-      role: user.role,
-      is_active: user.is_active,
-      admin_approved: user.admin_approved,
-      last_login_at: user.last_login_at,
-    };
-
     // Return success message
     return createAuthResponse(
       {
         message: "Login successful",
-        user: userData,
+        user: { ...user, password: "" },
       },
       token
     );
