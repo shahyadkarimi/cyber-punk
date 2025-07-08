@@ -17,8 +17,13 @@ export async function POST(request: NextRequest) {
 
     // Find user by email
     const user = await User.findOne({ email: validatedData.email }).select(
-      "-reset_token -reset_token_expires"
+      "-password -reset_token -reset_token_expires"
     );
+
+    const userPassword = await User.findOne({
+      email: validatedData.email,
+    }).select("-reset_token -reset_token_expires");
+
     if (!user) {
       return Response.json(
         { error: "Invalid email or password" },
@@ -37,7 +42,7 @@ export async function POST(request: NextRequest) {
     // Verify password
     const isPasswordValid = await bcrypt.compare(
       validatedData.password,
-      user.password
+      userPassword.password
     );
     if (!isPasswordValid) {
       return Response.json(
@@ -60,7 +65,7 @@ export async function POST(request: NextRequest) {
     return createAuthResponse(
       {
         message: "Login successful",
-        user: { ...user, password: "" },
+        user,
       },
       token
     );

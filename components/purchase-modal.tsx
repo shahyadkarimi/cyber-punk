@@ -34,7 +34,7 @@ interface PurchaseModalProps {
 }
 
 export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [step, setStep] = useState<"confirm" | "payment" | "success" | "error">(
     "confirm"
   );
@@ -76,7 +76,8 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
     const totalPrice = domain.price || 0;
 
     if (paymentMethod === "balance") {
-      if (user?.balance || 0 < totalPrice) {
+      console.log((user?.balance || 0) < totalPrice);
+      if ((user?.balance || 0) < totalPrice) {
         setError(
           "Insufficient balance. Please add funds or choose another payment method."
         );
@@ -89,6 +90,8 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
           setTimeout(() => {
             router.push(res.data.successUrl);
           }, 2000);
+
+          refreshUser();
 
           setStep("success");
         })
@@ -143,7 +146,8 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
     }
   };
 
-  const hasEnoughBalance = userBalance >= (domain.price || 0) || isDevelopment;
+  const hasEnoughBalance =
+    (user?.balance || 0) >= (domain.price || 0) || isDevelopment;
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -256,10 +260,8 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
                     <div>
                       <span className="text-white">Wallet Balance</span>
                       <div className="text-xs text-[#d1f7ff]/60">
-                        Available: {formatPrice(userBalance)}
-                        {!hasEnoughBalance &&
-                          !isDevelopment &&
-                          " (Insufficient)"}
+                        Available: {formatPrice(user?.balance || 0)}
+                        {!hasEnoughBalance && " (Insufficient)"}
                       </div>
                     </div>
                   </Label>
