@@ -33,8 +33,11 @@ import {
   ChevronLeft,
   ChevronRight,
   Plus,
+  Download,
+  Eye,
 } from "lucide-react";
 import { postData } from "@/services/API";
+import Link from "next/link";
 
 export default function TransactionsList() {
   const { user } = useAuth();
@@ -226,16 +229,17 @@ export default function TransactionsList() {
                   <TableHead className="text-gray-400">
                     Transaction Hash
                   </TableHead>
+                  <TableHead className="text-gray-300">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {transactions.map((transaction) => (
                   <TableRow
-                    key={transaction.id}
+                    key={transaction.track_id}
                     className="border-gray-800 hover:bg-black/40"
                   >
                     <TableCell className="font-mono text-xs text-gray-300">
-                      {transaction.id.substring(0, 8)}...
+                      {transaction.track_id.substring(0, 5)}...
                     </TableCell>
                     <TableCell className="text-gray-300">
                       {formatDate(transaction.created_at)}
@@ -250,20 +254,36 @@ export default function TransactionsList() {
                     <TableCell className="font-mono text-xs text-gray-300">
                       {transaction.transaction_hash || "N/A"}
                     </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Link href={`/dashboard/transactions/${transaction.track_id}`}>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 hover:bg-neon-green/15 hover:text-neon-green transition-all"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 hover:bg-neon-green/15 hover:text-neon-green transition-all"
+                          onClick={() => {
+                            // Handle download receipt
+                            console.log("Download receipt for:", transaction.track_id);
+                          }}
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
           </div>
         )}
-
-        {/* Debug Info */}
-        <div className="p-4 border-t border-gray-800 bg-black/20">
-          <div className="text-xs text-gray-500">
-            Debug: User ID: {user?._id || "Not logged in"} | Role: {userRole} |
-            Transactions: {transactions.length} | Total: {totalCount}
-          </div>
-        </div>
 
         {/* Pagination */}
         {!loading && !error && transactions.length > 0 && (

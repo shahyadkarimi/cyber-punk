@@ -281,7 +281,7 @@ export default function SalesList() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 w-8 p-0 hover:bg-gray-800"
+                              className="h-8 w-8 p-0 hover:bg-neon-green/15 hover:text-neon-green transition-all"
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
@@ -289,7 +289,7 @@ export default function SalesList() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0 hover:bg-gray-800"
+                            className="h-8 w-8 p-0 hover:bg-neon-green/15 hover:text-neon-green transition-all"
                             onClick={() => {
                               // Handle download receipt
                               console.log("Download receipt for:", sale.id);

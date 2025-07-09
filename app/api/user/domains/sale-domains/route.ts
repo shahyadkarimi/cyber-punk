@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
 
     const transactions = await Transactions.find({
       seller_id: authUser.userId,
-      status: "paid",
     })
       .select("-__v")
       .lean();
@@ -37,9 +36,10 @@ export async function GET(request: NextRequest) {
 
     const totalSales = transactions.length;
     const totalRevenue = transactions.reduce(
-      (sum, tx) => sum + (tx.amount || 0),
+      (sum, tx) => sum + (tx.status === "paid" ? tx.amount || 0 : 0),
       0
     );
+
     const averagePrice = totalSales > 0 ? totalRevenue / totalSales : 0;
 
     const conversionRate = null;
