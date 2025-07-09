@@ -31,6 +31,8 @@ import {
   Edit,
   Trash2,
   X,
+  CheckCircle,
+  Copy,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -64,6 +66,9 @@ export default function MyReferralsList() {
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
   const [pageSize] = useState(10);
+  const [copied, setCopied] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const { user } = useAuth();
 
   const fetchDomains = () => {
     setLoading(true);
@@ -107,10 +112,75 @@ export default function MyReferralsList() {
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
+
   const totalPages = Math.ceil(totalCount / pageSize);
+
+  const copyToClipboard = (text: number) => {
+    navigator.clipboard.writeText(String(text));
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyLinkToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2000);
+  };
 
   return (
     <>
+      <div className="flex flex-col lg:flex-row gap-4 lg:items-center lg:gap-8">
+        <div className="w-full max-w-60">
+          <Label className="text-slate-400">Your Referral Code</Label>
+          <div className="flex items-center gap-2 mt-1">
+            <Input
+              value={user?.referral_code}
+              readOnly
+              className="bg-[#0a0a0c] border-[#3a3a4a] text-white"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-[#2a2a3a] text-white hover:bg-[#2a2a3a] bg-transparent"
+              onClick={() => copyToClipboard(user?.referral_code || 0)}
+            >
+              {copied ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
+
+        <div className="w-full lg:max-w-[650px]">
+          <Label className="text-slate-400">Your Referral Link</Label>
+          <div className="flex items-center gap-2 mt-1">
+            <Input
+              value={`${window.location.hostname}/auth/signup?referral_code=${user?.referral_code}`}
+              readOnly
+              className="bg-[#0a0a0c] border-[#3a3a4a] text-white"
+            />
+            <Button
+              size="sm"
+              variant="outline"
+              className="border-[#2a2a3a] text-white hover:bg-[#2a2a3a] bg-transparent"
+              onClick={() =>
+                copyLinkToClipboard(
+                  `${window.location.hostname}/auth/signup?referral_code=${user?.referral_code}`
+                )
+              }
+            >
+              {copiedLink ? (
+                <CheckCircle className="h-4 w-4" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </div>
+      </div>
+
       <Card className="w-full shadow-md border border-gray-800 bg-black/60">
         <CardHeader className="bg-black/40 border-b border-gray-800">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">

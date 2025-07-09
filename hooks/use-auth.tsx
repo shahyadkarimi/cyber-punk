@@ -20,6 +20,7 @@ export interface User {
   admin_approved: boolean;
   created_at: string;
   last_login_at?: string;
+  referral_code?: number;
 }
 
 interface RegisterData {
