@@ -3,6 +3,7 @@ import User from "@/models/UsersModel";
 import { getAuthUser } from "@/lib/auth";
 import connectDB from "@/lib/connectDB";
 import Domains from "@/models/DomainsModel";
+import Transactions from "@/models/TransactionsModel";
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,13 +57,24 @@ export async function GET(request: NextRequest) {
       Domains.countDocuments({ status: "rejected", deleted_at: null }),
     ]);
 
+    const sellerTransactions = await Transactions.find({
+      status: "paid",
+    })
+      .select("-__v")
+      .lean();
+
+    const totalRevenue = sellerTransactions.reduce(
+      (sum, tx) => sum + (tx.amount || 0),
+      0
+    );
+
     return NextResponse.json(
       {
         domains: formattedDomains,
         total_users,
         total_domains,
         pending_domains,
-        total_revenue: 0,
+        total_revenue: totalRevenue,
       },
       { status: 200 }
     );
