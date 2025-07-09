@@ -45,19 +45,14 @@ export async function POST(request: NextRequest) {
     const domains = await Domains.find({
       ...query,
       deleted_at: null,
-      status: "approved",
+      status: { $in: ["approved",  "sold"] },
     })
       .populate("seller_id", "id username email")
       .populate("approved_by", "id username email")
       .sort({ created_at: -1 })
       .lean();
 
-    const [total, pending, approved, rejected] = await Promise.all([
-      Domains.countDocuments({ deleted_at: null }),
-      Domains.countDocuments({ status: "pending", deleted_at: null }),
-      Domains.countDocuments({ status: "approved", deleted_at: null }),
-      Domains.countDocuments({ status: "rejected", deleted_at: null }),
-    ]);
+    const total = await Domains.countDocuments({ deleted_at: null })
 
     const formattedDomains = domains.map((item) => ({
       _id: item._id,

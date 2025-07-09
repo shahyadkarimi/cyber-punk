@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
           } catch (error) {
             console.error("Error updating domain:", error);
             return NextResponse.json(
-              { success: false, error: "Failed to update domain" },
+              { success: false, error: "Faild to purchase domain" },
               { status: 500 }
             );
           }

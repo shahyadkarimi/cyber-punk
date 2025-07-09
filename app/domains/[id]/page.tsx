@@ -28,6 +28,9 @@ import { baseURL } from "@/services/API";
 import { getDomainInfo } from "@/helper/helper";
 import BookmarkShare from "./bookmark-share";
 import { cookies } from "next/headers";
+import BuyDomain from "./BuyDomain";
+import QuickBuy from "./QuickBuy";
+import Link from "next/link";
 
 const Page = async ({ params }: { params: { id: string } }) => {
   const { id } = await params;
@@ -62,6 +65,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
   };
 
   const formatDate = (dateString: string) => {
+    console.log(domain);
     return new Intl.DateTimeFormat("en-US", {
       year: "numeric",
       month: "long",
@@ -103,9 +107,15 @@ const Page = async ({ params }: { params: { id: string } }) => {
       <div className="border-b border-[#2a2a3a] bg-[#1a1a1a]">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" className="text-white hover:bg-[#2a2a3a]">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Marketplace
+            <Button
+              asChild
+              variant="ghost"
+              className="text-white hover:bg-[#2a2a3a]"
+            >
+              <Link href={"/domains"}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Marketplace
+              </Link>
             </Button>
 
             <BookmarkShare domain={domain} />
@@ -168,17 +178,15 @@ const Page = async ({ params }: { params: { id: string } }) => {
                   </div>
                 </div>
                 <div className="flex flex-col gap-3">
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white">
-                    <DollarSign className="h-4 w-4 mr-2" />
-                    Buy Now
-                  </Button>
-                  <Button
+                  <BuyDomain domain={domain} />
+
+                  {/* <Button
                     variant="outline"
                     className="border-purple-600 text-purple-600 hover:bg-purple-600/10 bg-transparent"
                   >
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Make Offer
-                  </Button>
+                  </Button> */}
                 </div>
               </div>
             </div>
@@ -488,14 +496,12 @@ const Page = async ({ params }: { params: { id: string } }) => {
                     <div className="font-semibold text-white flex items-center gap-2">
                       {domain?.seller?.username || "Unknown"}
                       <CheckCircle className="h-4 w-4 text-green-600" />
-                      {/* {domain.seller.verified && (
-                      )} */}
                     </div>
                     <div className="flex items-center gap-1">
                       <Star className="h-4 w-4 text-yellow-400 fill-current" />
                       <span className="text-sm text-slate-400">
-                        {domain.seller.rating || 4.8} (
-                        {domain.seller.totalSales || 0} sales)
+                        {domain?.seller?.rating || 4.8} (
+                        {domain?.seller?.totalSales || 0} sales)
                       </span>
                     </div>
                   </div>
@@ -507,20 +513,14 @@ const Page = async ({ params }: { params: { id: string } }) => {
                   <div className="flex items-center justify-between">
                     <span className="text-slate-400">Member Since</span>
                     <span className="text-white">
-                      {/* {formatDate(domain.seller.joinDate)} */}
-                      N/A
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-400">Response Time</span>
-                    <span className="text-white">
-                      {/* {domain.seller.responseTime} */}
-                      N/A
+                      {domain?.seller?.created_at
+                        ? formatDate(domain?.seller?.created_at)
+                        : "N/A"}
                     </span>
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-2">
+                {/* <div className="flex flex-col gap-2">
                   <Button className="w-full bg-purple-600 hover:bg-purple-700">
                     <Mail className="h-4 w-4 mr-2" />
                     Contact Seller
@@ -532,7 +532,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
                     <MessageCircle className="h-4 w-4 mr-2" />
                     Send Message
                   </Button>
-                </div>
+                </div> */}
               </CardContent>
             </Card>
 
@@ -546,7 +546,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
               </CardHeader>
               <CardContent>
                 <Badge className="bg-orange-600/15 text-orange-600 border-orange-600">
-                  {domain.category}
+                  {domain?.category}
                 </Badge>
               </CardContent>
             </Card>
@@ -557,16 +557,17 @@ const Page = async ({ params }: { params: { id: string } }) => {
                 <CardTitle className="text-white">Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full bg-green-600 hover:bg-green-700">
-                  <DollarSign className="h-4 w-4 mr-2" />
-                  Buy Now - {formatPrice(domain.price)}
-                </Button>
+                <QuickBuy domain={domain} />
+
                 <Button
+                  asChild
                   variant="outline"
                   className="w-full border-slate-600 text-slate-300 hover:bg-slate-600/10 bg-transparent"
                 >
-                  <ExternalLink className="h-4 w-4 mr-2" />
-                  View Live Site
+                  <Link href={`https://${domain.domain}`} target="_blank">
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    View Live Site
+                  </Link>
                 </Button>
               </CardContent>
             </Card>

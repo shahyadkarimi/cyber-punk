@@ -150,7 +150,10 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
     (user?.balance || 0) >= (domain.price || 0) || isDevelopment;
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog
+      open={domain.status === "sold" ? false : isOpen}
+      onOpenChange={handleClose}
+    >
       <DialogContent className="bg-[#1a1a2e] border-[#2a2a3a] text-[#d1f7ff] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Globe, TrendingUp, Eye, ShoppingCart, Star } from "lucide-react";
+import { Globe, TrendingUp, Eye, ShoppingCart, Star, Ban } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { PurchaseModal } from "@/components/purchase-modal";
 import type { DomainWithSeller } from "@/lib/database-services/domains-service";
@@ -42,13 +42,13 @@ export function DomainCard({ domain, viewMode = "grid" }: DomainCardProps) {
     }).format(price);
   };
 
-  const handlePurchase = () => {
+  const purchaseDomainHandler = () => {
     if (!user) {
       window.location.href = "/auth/login?redirect=/domains";
       return;
     }
 
-    setShowPurchaseModal(true);
+    if (domain.status === "approved") setShowPurchaseModal(true);
   };
 
   if (viewMode === "list") {
@@ -114,7 +114,7 @@ export function DomainCard({ domain, viewMode = "grid" }: DomainCardProps) {
                   </Button>
                 </Link>
                 <Button
-                  onClick={handlePurchase}
+                  onClick={purchaseDomainHandler}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                 >
                   <ShoppingCart className="h-4 w-4 mr-2" />
@@ -199,11 +199,21 @@ export function DomainCard({ domain, viewMode = "grid" }: DomainCardProps) {
           </Link>
 
           <Button
-            onClick={handlePurchase}
+            onClick={purchaseDomainHandler}
+            disabled={domain.status === "sold"}
             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
           >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            Buy Now
+            {domain.status === "sold" ? (
+              <>
+                <Ban className="h-4 w-4 mr-2" />
+                Sold
+              </>
+            ) : (
+              <>
+                <ShoppingCart className="h-4 w-4 mr-2" />
+                Buy Now
+              </>
+            )}
           </Button>
         </CardFooter>
       </Card>

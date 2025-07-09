@@ -45,7 +45,7 @@ export async function GET(
       id: id,
       deleted_at: null,
     })
-      .populate("seller_id", "id username email")
+      .populate("seller_id", "id username email created_at admin_approved")
       .populate("approved_by", "id username email")
       .lean<DomainType>();
 
@@ -69,7 +69,7 @@ export async function GET(
       description: domain.description,
       price: domain.price,
       status: domain.status,
-      seller: domain.seller_id || {},
+      seller: domain.seller_id,
       watchlist_count: watchlistCount,
       da_score: domain.da_score,
       pa_score: domain.pa_score,
