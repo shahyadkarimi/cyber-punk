@@ -77,18 +77,41 @@ export default function PaymentStatus({}) {
   };
 
   const handleCapture = async () => {
-    if (!ref.current) return;
+    if (!ref.current || !paymentData?.order_id) return;
 
     const canvas = await html2canvas(ref.current, {
       backgroundColor: "#0a0a0c",
       useCORS: true,
     });
 
-    const dataURL = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.href = dataURL;
-    link.download = `${paymentData?.domain?.domain}`;
-    link.click();
+    const blob = await new Promise<Blob>((resolve) => {
+      canvas.toBlob((blob) => {
+        if (blob) resolve(blob);
+      }, "image/png");
+    });
+
+    const formData = new FormData();
+    formData.append("image", blob, "proof.png");
+    formData.append("orderId", paymentData.order_id);
+
+    if (!paymentData?.active_proof) {
+      try {
+        const res = await fetch("/api/upload/image/active-proofe", {
+          method: "POST",
+          body: formData,
+        });
+
+        const result = await res.json();
+
+        if (!res.ok) {
+          console.error("❌ Upload failed:", result.error);
+        } else {
+          console.log("✅:", result.message);
+        }
+      } catch (err) {
+        console.error("❌ Upload error:", err);
+      }
+    }
   };
 
   if (error) {
@@ -407,6 +430,7 @@ export default function PaymentStatus({}) {
                           <img
                             className="w-full max-h-80 object-cover object-top"
                             src={`https://image.thum.io/get/width/800/https://${paymentData?.domain?.domain}`}
+                            onLoad={handleCapture}
                           />
                         </div>
 

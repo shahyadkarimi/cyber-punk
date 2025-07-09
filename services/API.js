@@ -22,7 +22,6 @@ const servicesApi = axios.create({
 const postData = async (
   param,
   data,
-  onUploadProgress,
   headers,
   withToken = false
 ) => {
@@ -35,7 +34,6 @@ const postData = async (
           "Content-Type": "multipart/form-data",
         }),
       },
-      onUploadProgress,
     });
 
     return res;

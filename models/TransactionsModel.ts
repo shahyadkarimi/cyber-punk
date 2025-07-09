@@ -14,6 +14,7 @@ export interface Transactions extends Document {
   track_id: string;
   currency?: string;
   network?: string;
+  active_proof?: string;
   wallet_address?: string;
   completed_at?: Date;
   created_at: Date;
@@ -46,6 +47,7 @@ const TransactionSchema: Schema = new Schema<Transactions>({
 
   currency: { type: String, default: null },
   network: { type: String, default: null },
+  active_proof: { type: String, default: null },
   wallet_address: { type: String, default: null },
 
   completed_at: { type: Date, default: null },

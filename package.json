@@ -50,6 +50,8 @@
     "crypto-js": "latest",
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
+    "formidable": "^3.5.4",
+    "fs": "^0.0.1-security",
     "html2canvas": "^1.4.1",
     "input-otp": "1.4.1",
     "jsonwebtoken": "^9.0.2",
@@ -69,11 +71,13 @@
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
     "tldts": "^7.0.9",
+    "util": "^0.12.5",
     "uuid": "^11.1.0",
     "vaul": "^0.9.6",
     "zod": "latest"
   },
   "devDependencies": {
+    "@types/formidable": "^3.4.5",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22",
     "@types/react": "^19",
