@@ -1,26 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import connectDB from "@/lib/connectDB";
 import { getAuthUser } from "@/lib/auth";
-import Transactions from "@/models/TransactionsModel";
-import Domains from "@/models/DomainsModel";
-
-type TransactionWithDomainType = {
-  _id: string;
-  seller_id: string;
-  buyer_id: string;
-  amount: number;
-  status: string;
-  order_id: string;
-  track_id: string;
-  domain: any;
-  payment_method: string;
-  transaction_hash: string;
-  currency: string;
-  network: string;
-  wallet_address: string;
-  completed_at: Date;
-  created_at: Date;
-};
+import WalletTransactions from "@/models/WalletTransactionsModel";
 
 export async function POST(request: NextRequest) {
   try {
@@ -73,35 +54,22 @@ export async function POST(request: NextRequest) {
       query.$and = andConditions;
     }
 
-    const transactions = await Transactions.find(query)
-      .populate("seller_id", "id username email")
-      .populate("buyer_id", "id username email")
+    const transactions = await WalletTransactions.find(query)
+      .populate("user_id", "id username email")
       .sort({ created_at: -1 })
       .lean();
 
-    const transactionsWithDomain = await Promise.all(
-      transactions.map(async (tx) => {
-        const domain = await Domains.findOne({ id: tx.domain_id })
-          .populate("buyer_id", "username email full_name")
-          .select("-__v")
-          .lean();
-        return { ...tx, domain };
-      })
-    );
-
-    const total = await Transactions.countDocuments({ status: "paid" });
+    const total = await WalletTransactions.countDocuments({ status: "paid" });
 
     return NextResponse.json(
       {
-        transactions: transactionsWithDomain.map((tx: any) => ({
+        transactions: transactions.map((tx) => ({
           id: tx._id,
-          seller: tx.seller_id,
-          buyer: tx.buyer_id,
+          user: tx.user_id,
           amount: tx.amount,
           status: tx.status,
           order_id: tx.order_id,
           track_id: tx.track_id,
-          domain_name: tx.domain.domain,
           payment_method: tx.payment_method,
           transaction_hash: tx.transaction_hash,
           currency: tx.currency,

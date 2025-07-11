@@ -11,7 +11,7 @@ export default function TransactionsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-[#00ff9d]">Transactions</h1>
-        <p className="text-gray-400">View and manage your transaction history</p>
+        <p className="text-gray-400">View and manage your transactions history</p>
       </div>
 
       <TransactionsList />

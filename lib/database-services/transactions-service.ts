@@ -15,7 +15,7 @@ export type Transaction = {
   created_at: string;
   updated_at: string;
   // Extended fields from joins
-  domain_name?: string;
+  domain_name: string;
 };
 
 export type TransactionFilter = {

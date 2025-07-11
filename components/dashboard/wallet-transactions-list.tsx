@@ -39,10 +39,10 @@ import {
 import { postData } from "@/services/API";
 import Link from "next/link";
 
-export default function TransactionsList() {
+export default function WalletTransactionsList() {
   const { user } = useAuth();
   const userRole = user?.role || "client";
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [totalCount, setTotalCount] = useState(0);
@@ -60,7 +60,7 @@ export default function TransactionsList() {
     setLoading(true);
     setError(null);
 
-    postData("/admin/transactions/get-all", {})
+    postData("/admin/wallet-transactions/get-all", {})
       .then((res) => {
         setTransactions(res.data.transactions || []);
         setLoading(false);
@@ -160,7 +160,7 @@ export default function TransactionsList() {
                 <SelectContent className="bg-black border-gray-700">
                   <SelectItem value="all">All Statuses</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="completed">Paid</SelectItem>
+                  <SelectItem value="paid">Paid</SelectItem>
                   <SelectItem value="cancelled">Cancelled</SelectItem>
                 </SelectContent>
               </Select>
@@ -220,7 +220,7 @@ export default function TransactionsList() {
               <TableHeader className="bg-black/40">
                 <TableRow className="border-gray-800 hover:bg-transparent">
                   <TableHead className="text-gray-400">ID</TableHead>
-                  <TableHead className="text-gray-400">Domain</TableHead>
+                  <TableHead className="text-gray-400">User</TableHead>
                   <TableHead className="text-gray-400">Date</TableHead>
                   <TableHead className="text-gray-400">Amount</TableHead>
                   <TableHead className="text-gray-400">Status</TableHead>
@@ -243,9 +243,7 @@ export default function TransactionsList() {
                       {transaction.track_id.substring(0, 5)}...
                     </TableCell>
                     <TableCell className="font-mono text-xs text-gray-300">
-                      {transaction?.domain_name?.length > 14
-                        ? transaction?.domain_name?.substring(0, 15)
-                        : transaction?.domain_name}
+                      {transaction?.user?.email}
                     </TableCell>
                     <TableCell className="text-gray-300">
                       {formatDate(transaction.created_at)}
@@ -262,9 +260,7 @@ export default function TransactionsList() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Link
-                          href={`/dashboard/domain-transactions/${transaction.track_id}`}
-                        >
+                        <Link href={`/dashboard/wallet-transactions/${transaction.track_id}`}>
                           <Button
                             variant="ghost"
                             size="sm"
@@ -279,10 +275,7 @@ export default function TransactionsList() {
                           className="h-8 w-8 p-0 hover:bg-neon-green/15 hover:text-neon-green transition-all"
                           onClick={() => {
                             // Handle download receipt
-                            console.log(
-                              "Download receipt for:",
-                              transaction.track_id
-                            );
+                            console.log("Download receipt for:", transaction.track_id);
                           }}
                         >
                           <Download className="h-4 w-4" />

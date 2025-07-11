@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useAuth } from "@/hooks/use-auth"
-import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
-import { cn } from "@/lib/utils"
+import type React from "react";
+import { useAuth } from "@/hooks/use-auth";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 import {
   LayoutDashboard,
   Users,
@@ -20,23 +20,24 @@ import {
   LogOut,
   Home,
   Link as LinkIcon,
-  Bookmark
-} from "lucide-react"
+  Bookmark,
+  BanknoteIcon,
+} from "lucide-react";
 
 interface DashboardLayoutProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user,  logout } = useAuth()
-  const pathname = usePathname()
-  const router = useRouter()
-  const role = user?.role || "client"
+  const { user, logout } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
+  const role = user?.role || "client";
 
   const handleSignOut = async () => {
-    await logout()
-    router.push("/")
-  }
+    await logout();
+    router.push("/");
+  };
 
   const adminNavItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
@@ -44,18 +45,31 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { href: "/dashboard/exploits", icon: Shield, label: "Exploits" },
     { href: "/dashboard/shells", icon: Code, label: "Shells" },
     { href: "/dashboard/domains", icon: Globe, label: "Domains" },
-    { href: "/dashboard/transactions", icon: DollarSign, label: "Transactions" },
+    {
+      href: "/dashboard/domain-transactions",
+      icon: DollarSign,
+      label: "Domain Transactions",
+    },
+    {
+      href: "/dashboard/wallet-transactions",
+      icon: BanknoteIcon,
+      label: "Wallet Transactions",
+    },
     { href: "/dashboard/settings", icon: Settings, label: "Settings" },
-  ]
+  ];
 
   const sellerNavItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
     { href: "/dashboard/my-domains", icon: Globe, label: "My Domains" },
-    { href: "/dashboard/submit-domain", icon: FileText, label: "Submit Domain" },
+    {
+      href: "/dashboard/submit-domain",
+      icon: FileText,
+      label: "Submit Domain",
+    },
     { href: "/dashboard/sales", icon: DollarSign, label: "Sales" },
     { href: "/dashboard/my-referrals", icon: LinkIcon, label: "Referrals" },
     { href: "/dashboard/profile", icon: Settings, label: "Profile" },
-  ]
+  ];
 
   const clientNavItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Overview" },
@@ -64,17 +78,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { href: "/dashboard/watchlist", icon: Bookmark, label: "Watchlist" },
     { href: "/dashboard/my-referrals", icon: LinkIcon, label: "Referrals" },
     { href: "/dashboard/profile", icon: Settings, label: "Profile" },
-  ]
+  ];
 
   const getNavItems = () => {
-    if (role === "admin") return adminNavItems
-    if (role === "seller") return sellerNavItems
-    return clientNavItems
-  }
+    if (role === "admin") return adminNavItems;
+    if (role === "seller") return sellerNavItems;
+    return clientNavItems;
+  };
 
-  const navItems = getNavItems()
+  const navItems = getNavItems();
 
-//  <div className="flex h-screen bg-[#0d0d0f] overflow-hidden">
+  //  <div className="flex h-screen bg-[#0d0d0f] overflow-hidden">
   return (
     <div className="flex bg-[#0d0d0f] overflow-hidden">
       {/* Single Sidebar */}
@@ -82,28 +96,36 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Header */}
         <div className="p-6 border-b border-[#2a2a3a]">
           <h2 className="text-xl font-bold text-[#00ff9d]">
-            {role === "admin" ? "Admin Panel" : role === "seller" ? "Seller Dashboard" : "Client Dashboard"}
+            {role === "admin"
+              ? "Admin Panel"
+              : role === "seller"
+              ? "Seller Dashboard"
+              : "Client Dashboard"}
           </h2>
-          <p className="text-sm text-gray-400 mt-1">Welcome, {user?.username || user?.email?.split("@")[0]}</p>
+          <p className="text-sm text-gray-400 mt-1">
+            Welcome, {user?.username || user?.email?.split("@")[0]}
+          </p>
         </div>
 
         {/* Navigation */}
         <nav className="flex-1 px-4 py-4 space-y-2">
           {navItems.map((item) => {
-            const isActive = pathname === item.href
+            const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors",
-                  isActive ? "bg-[#00ff9d]/20 text-[#00ff9d]" : "text-gray-400 hover:bg-[#2a2a3a] hover:text-white",
+                  isActive
+                    ? "bg-[#00ff9d]/20 text-[#00ff9d]"
+                    : "text-gray-400 hover:bg-[#2a2a3a] hover:text-white"
                 )}
               >
                 <item.icon className="h-5 w-5" />
                 <span>{item.label}</span>
               </Link>
-            )
+            );
           })}
         </nav>
 
@@ -131,5 +153,5 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="p-6">{children}</div>
       </div>
     </div>
-  )
+  );
 }

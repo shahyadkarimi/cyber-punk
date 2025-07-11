@@ -29,9 +29,13 @@ import { postData } from "@/services/API";
 
 interface TransactionDetailProps {
   trackId: string;
+  method: "domain" | "wallet";
 }
 
-export default function TransactionDetail({ trackId }: TransactionDetailProps) {
+export default function TransactionDetail({
+  trackId,
+  method,
+}: TransactionDetailProps) {
   const { user } = useAuth();
   const [transaction, setTransaction] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -45,7 +49,12 @@ export default function TransactionDetail({ trackId }: TransactionDetailProps) {
     setLoading(true);
     setError(null);
 
-    postData(`/admin/transactions/get`, { trackId })
+    postData(
+      method === "domain"
+        ? `/admin/transactions/get`
+        : `/admin/wallet-transactions/get`,
+      { trackId }
+    )
       .then((res) => {
         setLoading(false);
         setTransaction(res.data.transaction);
@@ -166,7 +175,13 @@ export default function TransactionDetail({ trackId }: TransactionDetailProps) {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <Link href="/dashboard/transactions">
+        <Link
+          href={
+            method === "domain"
+              ? "/dashboard/domain-transactions"
+              : "/dashboard/wallet-transactions"
+          }
+        >
           <Button
             variant="outline"
             className="border-gray-700 hover:bg-gray-800"
@@ -249,11 +264,19 @@ export default function TransactionDetail({ trackId }: TransactionDetailProps) {
                   {user?.role === "admin" && (
                     <div>
                       <p className="text-sm text-gray-400">User</p>
-                      <p>
-                        {transaction?.buyer_id?.email ||
-                          transaction?.buyer_id?.username ||
-                          "N/A"}
-                      </p>
+                      {method === "domain" ? (
+                        <p>
+                          {transaction?.buyer_id?.email ||
+                            transaction?.buyer_id?.username ||
+                            "N/A"}
+                        </p>
+                      ) : (
+                        <p>
+                          {transaction?.user_id?.email ||
+                            transaction?.user_id?.username ||
+                            "N/A"}
+                        </p>
+                      )}
                     </div>
                   )}
 

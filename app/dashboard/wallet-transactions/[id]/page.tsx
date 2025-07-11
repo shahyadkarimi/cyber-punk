@@ -20,7 +20,7 @@ export default function TransactionDetailPage({ params }: TransactionDetailPageP
         <p className="text-gray-400">View detailed information about this transaction</p>
       </div>
 
-      <TransactionDetail trackId={params.id} />
+      <TransactionDetail method="wallet" trackId={params.id} />
     </div>
   )
 }
