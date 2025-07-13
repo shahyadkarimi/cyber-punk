@@ -73,10 +73,9 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
       return;
     }
 
-    const totalPrice = domain.price || 0;
-
+    const totalPrice = (domain.price || 0) * 1.05;
+    console.log(totalPrice);
     if (paymentMethod === "balance") {
-      console.log((user?.balance || 0) < totalPrice);
       if ((user?.balance || 0) < totalPrice) {
         setError(
           "Insufficient balance. Please add funds or choose another payment method."
@@ -146,8 +145,7 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
     }
   };
 
-  const hasEnoughBalance =
-    (user?.balance || 0) >= (domain.price || 0) || isDevelopment;
+  const hasEnoughBalance = (user?.balance || 0) >= (domain.price || 0) * 1.05;
 
   return (
     <Dialog
@@ -263,8 +261,8 @@ export function PurchaseModal({ domain, isOpen, onClose }: PurchaseModalProps) {
                     <div>
                       <span className="text-white">Wallet Balance</span>
                       <div className="text-xs text-[#d1f7ff]/60">
-                        Available: {formatPrice(user?.balance || 0)}
-                        {!hasEnoughBalance && " (Insufficient)"}
+                        Available: {formatPrice(user?.balance || 0)}{" "}
+                        {!hasEnoughBalance && "(Insufficient)"}
                       </div>
                     </div>
                   </Label>

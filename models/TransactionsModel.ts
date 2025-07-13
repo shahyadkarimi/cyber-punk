@@ -7,6 +7,8 @@ export interface Transactions extends Document {
   seller_id?: Types.ObjectId | Users | null;
   buyer_id?: Types.ObjectId | Users | null;
   amount: number;
+  commission_amount?: number | null;
+  parent_referral_id?: Types.ObjectId | Users | null;
   status: string;
   payment_method?: string;
   transaction_hash?: string;
@@ -38,13 +40,14 @@ const TransactionSchema: Schema = new Schema<Transactions>({
     default: null,
   },
   amount: { type: Number, required: true },
+  commission_amount: { type: Number, default: null },
+  parent_referral_id: { type: Schema.Types.ObjectId, default: null },
   status: {
     type: String,
     required: true,
   },
   payment_method: { type: String, default: "oxapay" },
   transaction_hash: { type: String, default: null },
-
   currency: { type: String, default: null },
   network: { type: String, default: null },
   active_proof: { type: String, default: null },

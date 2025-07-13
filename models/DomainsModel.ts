@@ -7,6 +7,7 @@ export interface Domains extends Document {
   description?: string | null;
   price?: number | null;
   status: "pending" | "approved" | "rejected" | "sold";
+  activity_status: "active" | "dead";
   seller_id: Types.ObjectId | Users;
   buyer_id?: Types.ObjectId | Users | null;
   admin_notes?: string | null;
@@ -33,6 +34,11 @@ const DomainSchema: Schema = new Schema<Domains>({
     type: String,
     enum: ["pending", "approved", "rejected", "sold"],
     default: "pending",
+  },
+  activity_status: {
+    type: String,
+    enum: ["active", "dead"],
+    default: "active",
   },
   seller_id: {
     type: Schema.Types.ObjectId,

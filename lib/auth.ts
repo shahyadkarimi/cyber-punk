@@ -3,7 +3,10 @@ import { verifyToken } from "./jwt";
 
 export async function getAuthUser(request: NextRequest) {
   try {
-    const token = request.cookies.get("auth-token")?.value;
+    const token =
+      request.cookies.get("auth-token")?.value ||
+      request.headers.get("x-auth-token");
+      
     if (!token) {
       return null;
     }

@@ -146,9 +146,7 @@ export default function PaymentStatus({}) {
                 <Button
                   variant="ghost"
                   onClick={() => {
-                    // router.push("/dashboard");
-
-                    handleCapture();
+                    router.push("/dashboard");
                   }}
                   className="text-white hover:bg-[#2a2a3a]"
                 >

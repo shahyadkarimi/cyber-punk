@@ -10,8 +10,7 @@ const url =
     : "http://localhost:3000";
 
 function generateTrackId(): string {
-  const timestamp = Date.now().toString();
-  return timestamp.slice(-9);
+  return Date.now().toString().slice(-9);
 }
 
 export async function POST(request: NextRequest) {
@@ -20,7 +19,6 @@ export async function POST(request: NextRequest) {
     const { domainId } = data;
 
     const authUser = await getAuthUser(request);
-
     if (!authUser) {
       return NextResponse.json(
         { error: "Unauthorized. Please sign in." },
@@ -35,10 +33,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const domain = await Domains.findOne({
-      id: domainId,
-    });
-
+    const domain = await Domains.findOne({ id: domainId });
     if (!domain) {
       return NextResponse.json(
         { success: false, error: "Domain not found" },
@@ -53,15 +48,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const user = await User.findById(authUser.userId);
-
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: "Wallet not found" },
-        { status: 404 }
-      );
-    }
-
     if (domain.price == null) {
       return NextResponse.json(
         { success: false, error: "Domain price is not set" },
@@ -69,7 +55,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (user.balance < domain?.price) {
+    const buyer = await User.findById(authUser.userId);
+    const seller = await User.findById(domain.seller_id);
+
+    if (!buyer || !seller) {
+      return NextResponse.json(
+        { success: false, error: "User not found" },
+        { status: 404 }
+      );
+    }
+
+    const domainPrice = domain.price;
+    const totalCost = domainPrice * 1.05;
+
+    if (buyer.balance < totalCost) {
       return NextResponse.json(
         {
           success: false,
@@ -84,24 +83,49 @@ export async function POST(request: NextRequest) {
     domain.status = "sold";
     await domain.save();
 
-    user.balance -= domain.price;
-    await user.save();
+    buyer.balance -= totalCost;
+    await buyer.save();
 
-    const orderId = `domain-${domain.id}-${user._id}-${Date.now()}`;
+    seller.balance += domainPrice;
+    await seller.save();
 
-    const transaction = new Transactions({
+    const orderId = `domain-${domain.id}-${buyer._id}-${Date.now()}`;
+    const trackId = generateTrackId();
+
+    const transactionData: any = {
       order_id: orderId,
-      track_id: generateTrackId(),
+      track_id: trackId,
       domain_id: domainId,
-      seller_id: domain.seller_id,
-      buyer_id: authUser.userId,
-      amount: domain.price,
+      seller_id: seller._id,
+      buyer_id: buyer._id,
+      amount: domainPrice,
       status: "paid",
       payment_method: "wallet",
       completed_at: new Date(),
       created_at: new Date(),
-    });
+    };
 
+    const buyerReferralId = buyer.parent_referral;
+    const isReferralValid =
+      buyerReferralId &&
+      seller.referral_code &&
+      buyerReferralId !== seller.referral_code;
+
+    if (isReferralValid) {
+      const parentReferral = await User.findOne({
+        referral_code: buyerReferralId,
+      });
+      if (parentReferral) {
+        const commission = domainPrice * 0.25;
+        parentReferral.balance += commission;
+        await parentReferral.save();
+
+        transactionData.commission_amount = commission;
+        transactionData.parent_referral_id = parentReferral._id;
+      }
+    }
+
+    const transaction = new Transactions(transactionData);
     await transaction.save();
 
     return NextResponse.json({
